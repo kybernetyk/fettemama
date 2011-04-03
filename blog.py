@@ -8,6 +8,7 @@ class Blog:
         self.db = self.conn.blog
         self.posts = self.db.posts
         self.comments = self.db.comments
+        self.admin = self.db.admin
         self.state = 'idle'
     #
     def __del__(self):
@@ -63,7 +64,16 @@ class Blog:
             id = int(x['id'])
         return id+1
 
+    def check_password(self, testpwd):
+        cursor = self.admin.find({'admin_pass':testpwd})
+        if cursor.count() == 1:
+            return True
+        return False
+
     def new_post(self, commandline):
+        password = commandline[1]
+        if not self.check_password(password):
+            return 'wrong password.\n'
         self.state = 'posting'
         self.current_post = []
         return "enter post. enter $end to end input and save post.\n" + 8 * "0123456789" + "\n"
@@ -125,7 +135,7 @@ class Blog:
     def render_comments(self, item_id):
         comments = self.get_comments_for_item_id(item_id)
         if comments.count() == 0:
-            return "no comments for this post!\n"
+            return "no comments for this posts\n"
         ret = "comments for post # " + str(item_id) + ":\n"
         for comment in comments:
             comment.setdefault('id', 0)
@@ -209,6 +219,8 @@ class Blog:
             return 'continue', self.add_comment(itms)
 
         if itms[0] == 'post':
+            if len(itms) < 2:
+                return 'continue', 'syntax: post <admin_password>\n'
             return 'continue', self.new_post(itms)
 
         if itms[0] == 'version':
