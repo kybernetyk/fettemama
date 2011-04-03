@@ -9,6 +9,7 @@
 
 import pymongo
 import datetime
+import textwrap
 
 class Blog:
     def __init__(self):
@@ -91,8 +92,19 @@ class Blog:
             id = self.get_free_post_id()
             post = ""
             for line in self.current_post:
-                post += line
-                post += '\n'
+                line_prefix = ""
+                wrap_width = 70
+
+                #a prepending tab/> indicates indented quotes
+                if line[0] == '\t' or line[0] == '>':
+                    line = line[1:]     #i'd kill for char* here
+                    line_prefix = "\t> "
+                    wrap_width = 60
+                
+                for l in textwrap.wrap(line, wrap_width):
+                    post += line_prefix
+                    post += l
+                    post += '\n'
             self.state = 'idle'
             d = {'id' : id,
                  'content' : post.strip(),
@@ -151,13 +163,13 @@ class Blog:
         return ret
 
     def render_h_delimiter(self):
-        return "\n" + 80 * "-" + "\n"
+        return 80 * "-" + "\n\n"
 
     def render_latest_news(self, howmany):
         howmany = int(howmany)
         all_news = self.get_all_news(howmany)
         ret_string = "showing latest %s posts ...\n" % (howmany)
-        ret_string += len(ret_string) * "=" + "\n"
+        ret_string += len(ret_string) * "=" + "\n\n"
         for news_item in all_news:
             ret_string += self.render_news_item(news_item['id'])
             ret_string += self.render_h_delimiter()
@@ -170,7 +182,7 @@ class Blog:
         today = datetime.datetime.now()
         news = self.get_news_for_day(today)
         ret_string = "showing %s posts for today ...\n" % (str(news.count()))
-        ret_string += len(ret_string) * "=" + "\n"
+        ret_string += len(ret_string) * "=" + "\n\n"
         for news_item in news:
             ret_string += self.render_news_item(news_item['id'])
             ret_string += self.render_h_delimiter()

@@ -29,7 +29,6 @@ class ClientThread(threading.Thread):
         while 1:
             data = self.client.recv(self.size).strip("\r\n")
             if data:
-                #self.client.send("LOL THX UR: " + data)
                 command, ret = self.blog.process_input(data)
                 ret += self.blog.render_prompt()
                 self.client.send(ret)
