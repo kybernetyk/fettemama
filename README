@@ -5,6 +5,19 @@ server.py - simple sockets server
 client_thread.py - thread handler, each connection gets one thread
 blog.py - the blog itself. processes input, 'renders' blog
 
+setup:
+get mongodb running
+get pymongo
+create a db named 'blog'
+create a collection 'admin' in db
+add 'admin_pass' : 'yourpass' to the admin collection
+
+how to post:
+connect to port 1337 and enter the command 'post <yourpass>'. post away.
+
+how to anything:
+the command 'help' is there for you
+
 dependencies: mongodb, pymongo, python 2.6
 
 License: GPL
