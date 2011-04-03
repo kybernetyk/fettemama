@@ -160,7 +160,7 @@ class Blog:
         ret_string = 'fettemama.org v0.1\nimplemented commands:\n\n';
         ret_string += 'help\t- this list\n'
         ret_string += 'news [num]\t-shows num latest posts. num default = 5\n'
-        ret_string += "*today\t- shows today's posts\n"
+        ret_string += "today\t- shows today's posts\n"
         ret_string += 'read <post id>\t-shows the complete post with the given id\n'
         ret_string += 'comments <post id>\t- reads comments for a post\n'
         ret_string += 'comment <post id> <your_name> <comment>\t- adds a comment\n'
