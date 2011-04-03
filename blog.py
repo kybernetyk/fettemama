@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+''' 
+    blog.py:
+        mongodb backed 'blog'.
+    (c) Leon Szpilewski 2011
+        http://nntp.pl
+    License: GPL v3
+'''
+
 import pymongo
 import datetime
 
@@ -143,12 +151,13 @@ class Blog:
         return ret
 
     def render_h_delimiter(self):
-        return "\n------------------------------------------------------\n"
+        return "\n" + 80 * "-" + "\n"
 
     def render_latest_news(self, howmany):
         howmany = int(howmany)
         all_news = self.get_all_news(howmany)
         ret_string = "showing latest %s posts ...\n" % (howmany)
+        ret_string += len(ret_string) * "=" + "\n"
         for news_item in all_news:
             ret_string += self.render_news_item(news_item['id'])
             ret_string += self.render_h_delimiter()
@@ -161,6 +170,7 @@ class Blog:
         today = datetime.datetime.now()
         news = self.get_news_for_day(today)
         ret_string = "showing %s posts for today ...\n" % (str(news.count()))
+        ret_string += len(ret_string) * "=" + "\n"
         for news_item in news:
             ret_string += self.render_news_item(news_item['id'])
             ret_string += self.render_h_delimiter()
@@ -169,14 +179,13 @@ class Blog:
     def render_help(self):
         ret_string = 'fettemama.org v0.1\nimplemented commands:\n\n';
         ret_string += 'help\t- this list\n'
-        ret_string += 'news [num]\t-shows num latest posts. num default = 5\n'
+        ret_string += 'news [num]\t- shows num latest posts. num default = 5\n'
         ret_string += "today\t- shows today's posts\n"
         ret_string += 'read <post id>\t-shows the complete post with the given id\n'
         ret_string += 'comments <post id>\t- reads comments for a post\n'
         ret_string += 'comment <post id> <your_name> <comment>\t- adds a comment\n'
         ret_string += "rst\t- close connection\n"
         ret_string += 'version\t- shows version information\n'
-        ret_string += '\n* = not implemented yet\n'
         return ret_string
 
     def render_version(self):

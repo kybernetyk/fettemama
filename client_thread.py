@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+''' 
+    client_thread.py:
+        threading handler for client session
+    (c) Leon Szpilewski 2011
+        http://nntp.pl
+    License: GPL v3
+'''
+
 import socket
 import sys
 import threading

@@ -1,5 +1,6 @@
 mongodb powered blogging system in python. no http frontend - only telnet :P
 (c) Leon Szpilewski
+Licensed under GPL v3
 
 server.py - simple sockets server
 client_thread.py - thread handler, each connection gets one thread
@@ -20,4 +21,3 @@ the command 'help' is there for you
 
 dependencies: mongodb, pymongo, python 2.6
 
-License: GPL

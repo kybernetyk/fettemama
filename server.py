@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+''' 
+    server.py:
+        simple sockets based server
+    (c) Leon Szpilewski 2011
+        http://nntp.pl
+    License: GPL v3
+'''
+
 import select
 import socket
 import sys
