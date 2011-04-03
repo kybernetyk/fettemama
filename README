@@ -1,3 +1,8 @@
 mongodb powered blogging system in python. no http frontend - only telnet :P
+(c) Leon Szpilewski
+
+server.py - simple sockets server
+client_thread.py - thread handler, each connection gets one thread
+blog.py - the blog itself. processes input, 'renders' blog
 
 License: GPL
