@@ -209,8 +209,8 @@ class Blog:
         itms = []
         for itm in tmp:
             i = itm.strip()
-						if len(i) > 0:
-						    itms.append(i)
+            if len(i) > 0:
+                itms.append(i)
 
         if len(itms) == 0:
             return 'continue', "\n"
