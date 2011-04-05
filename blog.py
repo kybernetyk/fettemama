@@ -205,7 +205,12 @@ class Blog:
         return ret_string
 
     def process_input(self, input):
-        itms = input.split(' ')
+        tmp = input.split(' ')
+				itms = []
+				for itm in tmp:
+					i = itm.strip()
+					itms.append(i)
+
         if len(itms) == 0:
             return 'continue', "\n"
 
