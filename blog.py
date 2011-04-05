@@ -206,10 +206,10 @@ class Blog:
 
     def process_input(self, input):
         tmp = input.split(' ')
-				itms = []
-				for itm in tmp:
-					i = itm.strip()
-					itms.append(i)
+        itms = []
+        for itm in tmp:
+            i = itm.strip()
+            itms.append(i)
 
         if len(itms) == 0:
             return 'continue', "\n"
