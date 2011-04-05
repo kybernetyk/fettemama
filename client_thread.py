@@ -11,6 +11,7 @@ import socket
 import sys
 import threading
 import blog
+import datetime
 
 #oh wee, python threading suxx. need to build a class >.<
 class ClientThread(threading.Thread):
@@ -20,6 +21,7 @@ class ClientThread(threading.Thread):
         self.address = address
         self.size = 1024
         self.blog = blog.Blog()
+        print str(datetime.datetime.now())": new connection from: " + str(client)
 
     def run(self):
         s = self.blog.render_version()
