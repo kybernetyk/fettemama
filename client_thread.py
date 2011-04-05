@@ -21,7 +21,7 @@ class ClientThread(threading.Thread):
         self.address = address
         self.size = 1024
         self.blog = blog.Blog()
-        print str(datetime.datetime.now())": new connection from: " + str(client)
+        print str(datetime.datetime.now()) + ": new connection from: " + str(client)
 
     def run(self):
         s = self.blog.render_version()
