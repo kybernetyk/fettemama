@@ -36,9 +36,9 @@ class ClientThread(threading.Thread):
                 if command == 'close':
                     self.client.close()
                     break
-            #else:
-             #   self.client.close();
-              #  break;
+            else:
+							self.client.send(self.blog.render_prompt())
+
 #
 
 
