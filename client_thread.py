@@ -36,11 +36,11 @@ class ClientThread(threading.Thread):
                 self.client.send(ret)
 
                 if command == 'close':
-                    print str(self.address) + "closed connection"
+                    print str(datetime.datetime.now()) + ": connection close: " + str(self.address)
                     self.client.close()
                     break
             else:
-							self.client.send(self.blog.render_prompt())
+                self.client.send(self.blog.render_prompt())
 
 #
 
