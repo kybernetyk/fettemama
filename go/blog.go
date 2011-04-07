@@ -10,6 +10,10 @@ type BlogPost struct {
 	Id        int
 }
 
+type BlogRenderer interface {
+	func RenderPost(post *BlogPost) string
+}
+
 func RenderPost(post_id int) string {
 	post, err := g_DB.Get(post_id)
 	if err != nil {
