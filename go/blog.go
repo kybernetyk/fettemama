@@ -6,7 +6,7 @@ import (
 
 type BlogPost struct {
 	Content   string
-	Timestamp string
+	Timestamp int64
 	Id        int
 	Comments  []PostComment
 }
@@ -14,7 +14,7 @@ type BlogPost struct {
 type PostComment struct {
 	Content   string
 	Author    string
-	Timestamp string
+	Timestamp int64
 	Id        int
 }
 

@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"strings"
 	"strconv"
+	"time"
 )
 
 var (
@@ -166,7 +167,7 @@ func (srv *TelnetServer) setupCMDHandlers() {
 			comment := PostComment{
 				Content: content,
 				Author: nick,
-				Timestamp: "now",
+				Timestamp: time.Seconds(),
 				Id: comment_id,
 			}
 			post.Comments = append(post.Comments, comment)	

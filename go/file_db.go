@@ -4,6 +4,7 @@ import "fmt"
 import "os"
 import "io/ioutil"
 import "json"
+import "time"
 
 type FileDB struct {
 	fetch_chan   chan fetchReq
@@ -23,7 +24,7 @@ type storeReq struct {
 	err_chan  chan os.Error
 
 	content string
-	date    string
+	timestamp int64
 }
 
 type updateReq struct {
@@ -130,7 +131,7 @@ func (db *FileDB) Update(post *BlogPost) (id int, err os.Error) {
 func (db *FileDB) Put(content string) (id int, err os.Error) {
 	req := storeReq{
 		content:   content,
-		date:      "now",
+		timestamp:      time.Seconds(),
 		resp_chan: make(chan int),
 		err_chan:  make(chan os.Error),
 	}
@@ -216,7 +217,7 @@ L:
 		case req := <-db.store_chan:
 			post := BlogPost{
 				Content:   req.content,
-				Timestamp: req.date,
+				Timestamp: req.timestamp,
 			}
 
 			id, err := savePost(post)
