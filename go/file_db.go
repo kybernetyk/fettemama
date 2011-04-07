@@ -29,6 +29,62 @@ func NewFileDB() *FileDB {
 	return &FileDB{}
 }
 
+func (db *FileDB) Connect() {
+	db.fetch_chan = make(chan fetchReq)
+	db.store_chan = make(chan storeReq)
+	db.control_chan = make(chan string)
+
+	go db.run()
+}
+
+func (db *FileDB) Disconnect() {
+	fmt.Println("DB IS DISCONNECTING")
+	db.control_chan <- "stop"
+}
+
+
+func (db *FileDB) Get(id int) (post BlogPost, err os.Error) {
+	req := fetchReq{
+		post_id:   id,
+		resp_chan: make(chan BlogPost),
+		err_chan:  make(chan os.Error),
+	}
+
+	db.fetch_chan <- req
+
+	select {
+	case p := <-req.resp_chan:
+		post = p
+		return
+	case e := <-req.err_chan:
+		err = e
+		return
+	}
+	return
+}
+//post *BlogPost
+func (db *FileDB) Put(content string) (id int, err os.Error){
+	req := storeReq{
+		content:   content,
+		date:      "now",
+		resp_chan: make(chan int),
+		err_chan:  make(chan os.Error),
+	}
+
+	db.store_chan <- req
+	
+	select {
+	case i := <-req.resp_chan:
+		id = i
+		return
+	case e := <-req.err_chan:
+		err = e
+		return
+	}
+	return
+}
+
+
 func openPostByID(post_id int) (post BlogPost, err os.Error) {
 	fn := fmt.Sprintf("posts/%d.json", post_id)
 	contents, err := ioutil.ReadFile(fn)
@@ -100,57 +156,3 @@ L:
 	close(db.control_chan)
 }
 
-func (db *FileDB) Connect() {
-	db.fetch_chan = make(chan fetchReq)
-	db.store_chan = make(chan storeReq)
-	db.control_chan = make(chan string)
-
-	go db.run()
-}
-
-func (db *FileDB) Disconnect() {
-	fmt.Println("DB IS DISCONNECTING")
-	db.control_chan <- "stop"
-}
-
-
-func (db *FileDB) Get(id int) (post BlogPost, err os.Error) {
-	req := fetchReq{
-		post_id:   id,
-		resp_chan: make(chan BlogPost),
-		err_chan:  make(chan os.Error),
-	}
-
-	db.fetch_chan <- req
-
-	select {
-	case p := <-req.resp_chan:
-		post = p
-		return
-	case e := <-req.err_chan:
-		err = e
-		return
-	}
-	return
-}
-//post *BlogPost
-func (db *FileDB) Put(content string) (id int, err os.Error){
-	req := storeReq{
-		content:   content,
-		date:      "now",
-		resp_chan: make(chan int),
-		err_chan:  make(chan os.Error),
-	}
-
-	db.store_chan <- req
-	
-	select {
-	case i := <-req.resp_chan:
-		id = i
-		return
-	case e := <-req.err_chan:
-		err = e
-		return
-	}
-	return
-}
