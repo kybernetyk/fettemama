@@ -1,8 +1,9 @@
 package main
 
-var g_DB BlogDB
-
 func main() {
-	g_DB = NewFileDB();
-	RunServer()
+	db := NewFileDB();
+	renderer := NewTelnetBlogRenderer()
+	server := NewTelnetServer(db, renderer)
+	
+	server.Run()
 }

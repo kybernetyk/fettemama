@@ -6,8 +6,9 @@ import "io/ioutil"
 import "json"
 
 type FileDB struct {
-	fetch_chan chan fetchReq
-	store_chan chan storeReq
+	fetch_chan   chan fetchReq
+	store_chan   chan storeReq
+	update_chan  chan updateReq
 	control_chan chan string
 }
 
@@ -25,6 +26,46 @@ type storeReq struct {
 	date    string
 }
 
+type updateReq struct {
+	resp_chan chan int
+	err_chan  chan os.Error
+
+	post BlogPost
+}
+
+type metaInfo struct {
+	LastPostId int
+	LastCommentId int
+}
+
+func getMetaInfo() metaInfo {
+	fn := "posts/metainfo.json"
+	contents, err := ioutil.ReadFile(fn)
+	if err != nil {
+		return metaInfo{0,0}
+	}
+	
+	mi := metaInfo{}
+	json.Unmarshal(contents, &mi)
+	return mi
+}
+
+func saveMetaInfo(info metaInfo) {
+	fn := "posts/metainfo.json"
+	fmt.Println(info)
+	bytes, err := json.MarshalIndent(info, "", "  ")
+	if err != nil {
+		fmt.Println("error encoding metainfo:", err.String())
+		return
+	}
+	err = ioutil.WriteFile(fn, bytes, 0666)
+	if err != nil {
+		fmt.Println("error saving metainfo:", err.String())
+		return
+	}
+	
+}
+
 func NewFileDB() *FileDB {
 	return &FileDB{}
 }
@@ -33,6 +74,7 @@ func (db *FileDB) Connect() {
 	db.fetch_chan = make(chan fetchReq)
 	db.store_chan = make(chan storeReq)
 	db.control_chan = make(chan string)
+	db.update_chan = make(chan updateReq)
 
 	go db.run()
 }
@@ -62,8 +104,30 @@ func (db *FileDB) Get(id int) (post BlogPost, err os.Error) {
 	}
 	return
 }
+
+func (db *FileDB) Update(post *BlogPost) (id int, err os.Error) {
+	req := updateReq{
+		post: *post,
+		resp_chan: make(chan int),
+		err_chan: make(chan os.Error),
+	}
+	
+	db.update_chan <- req
+	
+	select {
+	case i := <-req.resp_chan:
+		id = i
+		return
+	case e := <-req.err_chan:
+		err = e
+		return
+	}
+	return
+	
+}
+
 //post *BlogPost
-func (db *FileDB) Put(content string) (id int, err os.Error){
+func (db *FileDB) Put(content string) (id int, err os.Error) {
 	req := storeReq{
 		content:   content,
 		date:      "now",
@@ -72,7 +136,7 @@ func (db *FileDB) Put(content string) (id int, err os.Error){
 	}
 
 	db.store_chan <- req
-	
+
 	select {
 	case i := <-req.resp_chan:
 		id = i
@@ -101,20 +165,41 @@ func openPostByID(post_id int) (post BlogPost, err os.Error) {
 }
 
 func savePost(post BlogPost) (id int, err os.Error) {
-	id = 1
+	mi := getMetaInfo()
+	mi.LastPostId++;
+	id = mi.LastPostId
 	fn := fmt.Sprintf("posts/%d.json", id)
 	post.Id = id
-	
+
 	bytes, err := json.MarshalIndent(post, "", "  ")
 	if err != nil {
 		return
 	}
 
-	fmt.Println(string(bytes))
+	fmt.Println("saving post:", string(bytes))
 	err = ioutil.WriteFile(fn, bytes, 0666)
+	if err != nil {
+		return
+	}
+	
+	saveMetaInfo(mi)
 
 	return
 }
+
+func updatePost(post BlogPost) (id int, err os.Error) {
+	fn := fmt.Sprintf("posts/%d.json", post.Id)
+	fmt.Println("updating post ...")
+	bytes, err := json.MarshalIndent(post, "", "  ")
+	if err != nil {
+		return
+	}
+	id = post.Id
+	fmt.Println("updated post ...")
+	fmt.Println(string(bytes))
+	err = ioutil.WriteFile(fn, bytes, 0666)
+	return
+}	
 
 func (db *FileDB) run() {
 L:
@@ -130,11 +215,19 @@ L:
 
 		case req := <-db.store_chan:
 			post := BlogPost{
-				Content: req.content,
+				Content:   req.content,
 				Timestamp: req.date,
 			}
-			
+
 			id, err := savePost(post)
+			if err != nil {
+				req.err_chan <- err
+				break
+			}
+			req.resp_chan <- id
+		
+		case req := <-db.update_chan:
+			id, err := updatePost(req.post)
 			if err != nil {
 				req.err_chan <- err
 				break
@@ -153,6 +246,7 @@ L:
 
 	close(db.fetch_chan)
 	close(db.store_chan)
+	close(db.update_chan)
 	close(db.control_chan)
+	
 }
-

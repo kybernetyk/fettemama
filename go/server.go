@@ -28,11 +28,24 @@ type CommandHandler struct {
 
 var master_chan = make(chan string)
 var status_chan = make(chan string)
-
 var cmd_handlers = make(map[string]CommandHandler)
 
+type TelnetServer struct {
+	db BlogDB
+	renderer BlogRenderer
+}
 
-func readline(b *bufio.Reader) (p []byte, err os.Error) {
+func NewTelnetServer(db BlogDB, renderer BlogRenderer) *TelnetServer {
+	ts := TelnetServer {
+		db: db,
+		renderer: renderer,
+	}
+	
+	return &ts
+}
+
+
+func (srv *TelnetServer) readline(b *bufio.Reader) (p []byte, err os.Error) {
 	if p, err = b.ReadSlice('\n'); err != nil {
 		return nil, err
 	}
@@ -45,12 +58,12 @@ func readline(b *bufio.Reader) (p []byte, err os.Error) {
 	return p[0:i], nil
 }
 
-func clientReader(session *BlogSession) {
+func (srv *TelnetServer) clientReader(session *BlogSession) {
 	var line []byte
 	br := bufio.NewReader(session.conn)
 
 	for {
-		line, _ = readline(br)
+		line, _ = srv.readline(br)
 		s := string(line)
 		if !session.active {
 			break
@@ -60,7 +73,7 @@ func clientReader(session *BlogSession) {
 	}
 }
 
-func clientWriter(session *BlogSession) {
+func (srv *TelnetServer) clientWriter(session *BlogSession) {
 	var err os.Error
 	for {
 		b := []byte(<-session.write_chan)
@@ -74,7 +87,7 @@ func clientWriter(session *BlogSession) {
 	}
 }
 
-func process(session *BlogSession, user_input string) {
+func (srv *TelnetServer) process(session *BlogSession, user_input string) {
 	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input
 	items := strings.Split(user_input, " ", -1)
 
@@ -99,57 +112,31 @@ func process(session *BlogSession, user_input string) {
 	}
 
 	session.write_chan <- k.handler(user_input, items)
-
-	return
-
-	if items[0] == "read" {
-		if len(items) != 2 {
-			session.write_chan <- "syntax: read <post_id>\n"
-			return
-		}
-		id, _ := strconv.Atoi(items[1])
-		post, err := g_DB.Get(id)
-		if err != nil {
-			session.write_chan <- "error: " + err.String() + "\n"
-			return
-		}
-		s := fmt.Sprintf("ID: %d\nDate: %s\nContent: %s\n", post.Id, post.Timestamp, post.Content)
-		session.write_chan <- s
-		return
-	}
-
-	if items[0] == "post" {
-	}
-
 }
 
-func renderEcho(commandline string, items []string) string {
-	if len(items) < 2 {
-		return "syntax: echo <shit to echo>\n"
-	}
-	s := strings.Join(items[1:], " ")
-	s += "\n"
-	return s
-}
 
-func setupCMDHandlers() {
-	cmd_handlers["echo"] = CommandHandler{
-		handler: renderEcho,
-	}
-
+func (srv *TelnetServer) setupCMDHandlers() {
 	cmd_handlers["read"] = CommandHandler{
 		handler: func(commandline string, items []string) string {
 			if len(items) != 2 {
 				return "syntax: read <post_id>\n"
 			}
 			id, _ := strconv.Atoi(items[1])
-			return RenderPost(id)
+			post, err := srv.db.Get(id)
+			if err != nil {
+				return "error: " + err.String() + "\n"
+			}
+			return srv.renderer.RenderPost(&post)
 		},
 	}
 
 	cmd_handlers["post"] = CommandHandler{
 		handler: func(commandline string, items []string) string {
-			id, err := g_DB.Put("hallo, das ist content")
+			if len(items) < 2 {
+				return "syntax: post <your awesome post>\n"
+			}
+			content := strings.Join(items[1:], " ")
+			id, err := srv.db.Put(content)
 			if err != nil {
 				return "error: " + err.String() + "\n"
 			}
@@ -157,20 +144,57 @@ func setupCMDHandlers() {
 			return s
 		},
 	}
+	
+	cmd_handlers["comment"] = CommandHandler{
+		handler: func(commandline string, items []string) string {
+			if len(items) < 3 {
+				return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
+			}
+			post_id, _ := strconv.Atoi(items[1])
+			post, err := srv.db.Get(post_id)
+			if err != nil {
+				return "error: " + err.String() + "\n"
+			}
+			
+			mi := getMetaInfo()
+			mi.LastCommentId++;
+			
+			nick := items[2]
+			content := strings.Join(items[3:], " ")
+			comment_id := mi.LastCommentId
+
+			comment := PostComment{
+				Content: content,
+				Author: nick,
+				Timestamp: "now",
+				Id: comment_id,
+			}
+			post.Comments = append(post.Comments, comment)	
+			fmt.Println(post.Comments)	
+			i, err := srv.db.Update(&post)
+			if err != nil {
+				return "error: " + err.String() + "\n"
+			}
+			saveMetaInfo(mi);
+			
+			s := fmt.Sprintf("commented post with id %d\n", i)
+			return s
+		},
+	}
 
 }
 
-func inputProcessor(session *BlogSession) {
+func (srv *TelnetServer) inputProcessor(session *BlogSession) {
 	for {
 		user_input := <-session.read_chan
 		if !session.active {
 			break
 		}
-		process(session, user_input)
+		srv.process(session, user_input)
 	}
 }
 
-func handleClient(conn net.Conn) {
+func (srv *TelnetServer) handleClient(conn net.Conn) {
 	defer conn.Close()
 
 	session := BlogSession{}
@@ -181,9 +205,9 @@ func handleClient(conn net.Conn) {
 	session.conn = conn
 	session.active = true
 
-	go clientReader(&session)
-	go clientWriter(&session)
-	go inputProcessor(&session)
+	go srv.clientReader(&session)
+	go srv.clientWriter(&session)
+	go srv.inputProcessor(&session)
 
 	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] new connection"
 	session.write_chan <- banner
@@ -206,7 +230,7 @@ func handleClient(conn net.Conn) {
 	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] disconnected"
 }
 
-func serverFunc() {
+func (srv *TelnetServer) serverFunc() {
 	service := fmt.Sprintf(":%d", port)
 	tcpAddr, _ := net.ResolveTCPAddr(service)
 	listener, _ := net.ListenTCP("tcp4", tcpAddr)
@@ -217,16 +241,16 @@ func serverFunc() {
 		if err != nil {
 			continue
 		}
-		go handleClient(conn)
+		go srv.handleClient(conn)
 	}
 }
 
-func RunServer() {
-	defer g_DB.Disconnect()
-	
-	g_DB.Connect()
-	setupCMDHandlers()
-	go serverFunc()
+func (srv *TelnetServer) Run() {
+	defer srv.db.Disconnect()
+
+	srv.db.Connect()
+	srv.setupCMDHandlers()
+	go srv.serverFunc()
 
 	for {
 		select {
