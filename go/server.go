@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"net"
@@ -7,8 +7,6 @@ import (
 	"bufio"
 	"strings"
 	"strconv"
-	"./dumbdb"
-	"./blog"
 )
 
 var (
@@ -110,7 +108,7 @@ func process(session *BlogSession, user_input string) {
 			return
 		}
 		id, _ := strconv.Atoi(items[1])
-		post, err := dumbdb.FetchPost(id)
+		post, err := FetchPost(id)
 		if err != nil {
 			session.write_chan <- "error: " + err.String() + "\n"
 			return
@@ -145,13 +143,13 @@ func setupCMDHandlers() {
 				return "syntax: read <post_id>\n"
 			}
 			id, _ := strconv.Atoi(items[1])
-			return blog.RenderPost(id)
+			return RenderPost(id)
 		},
 	}
 
 	cmd_handlers["post"] = CommandHandler{
 		handler: func(commandline string, items []string) string {
-			id, err := dumbdb.StorePost("hallo, das ist content")
+			id, err := StorePost("hallo, das ist content")
 			if err != nil {
 				return "error: " + err.String() + "\n"
 			}
@@ -223,8 +221,8 @@ func serverFunc() {
 	}
 }
 
-func Run() {
-	dumbdb.Start()
+func RunServer() {
+	StartDB()
 
 	setupCMDHandlers()
 

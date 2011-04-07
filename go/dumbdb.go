@@ -1,15 +1,14 @@
-package dumbdb
+package main
 
 import "fmt"
 import "os"
 import "io/ioutil"
 import "json"
 //import "strconv"
-import "./blog"
 
 
 type fetchReq struct {
-	resp_chan chan blog.Post
+	resp_chan chan BlogPost
 	err_chan  chan os.Error
 	post_id   int
 }
@@ -26,7 +25,7 @@ var fetch_chan chan fetchReq
 var store_chan chan storeReq
 var control_chan chan string
 
-func openPostByID(post_id int) (post blog.Post, err os.Error) {
+func openPostByID(post_id int) (post BlogPost, err os.Error) {
 	fn := fmt.Sprintf("posts/%d.json", post_id)
 	contents, err := ioutil.ReadFile(fn)
 	if err != nil {
@@ -41,7 +40,7 @@ func openPostByID(post_id int) (post blog.Post, err os.Error) {
 	return
 }
 
-func savePost(post blog.Post) (id int, err os.Error) {
+func savePost(post BlogPost) (id int, err os.Error) {
 	id = 1
 	fn := fmt.Sprintf("posts/%d.json", id)
 	post.Id = id
@@ -57,7 +56,7 @@ func savePost(post blog.Post) (id int, err os.Error) {
 	return
 }
 
-func run() {
+func runDB() {
 L:
 	for {
 		select {
@@ -70,7 +69,7 @@ L:
 			req.resp_chan <- post
 
 		case req := <-store_chan:
-			post := blog.Post{
+			post := BlogPost{
 				Content: req.content,
 				Timestamp: req.date,
 			}
@@ -97,23 +96,23 @@ L:
 	close(control_chan)
 }
 
-func Start() {
+func StartDB() {
 	fetch_chan = make(chan fetchReq)
 	store_chan = make(chan storeReq)
 	control_chan = make(chan string)
 
-	go run()
+	go runDB()
 }
 
-func Stop() {
+func StopDB() {
 	control_chan <- "stop"
 }
 
 
-func FetchPost(id int) (post blog.Post, err os.Error) {
+func FetchPost(id int) (post BlogPost, err os.Error) {
 	req := fetchReq{
 		post_id:   id,
-		resp_chan: make(chan blog.Post),
+		resp_chan: make(chan BlogPost),
 		err_chan:  make(chan os.Error),
 	}
 

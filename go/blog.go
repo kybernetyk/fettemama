@@ -1,17 +1,17 @@
-package blog
+package main
 import (
 	"fmt"
 	//"./dumbdb"
 )
 
-type Post struct {
+type BlogPost struct {
 	Content   string
 	Timestamp string
 	Id        int
 }
 
 func RenderPost(post_id int) string {
-	post, err := dumbdb.FetchPost(post_id)
+	post, err := FetchPost(post_id)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
