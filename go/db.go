@@ -96,7 +96,7 @@ L:
 	close(control_chan)
 }
 
-func StartDB() {
+func db_Start() {
 	fetch_chan = make(chan fetchReq)
 	store_chan = make(chan storeReq)
 	control_chan = make(chan string)
@@ -104,7 +104,7 @@ func StartDB() {
 	go runDB()
 }
 
-func StopDB() {
+func db_Stop() {
 	control_chan <- "stop"
 }
 

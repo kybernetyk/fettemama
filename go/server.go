@@ -222,7 +222,7 @@ func serverFunc() {
 }
 
 func RunServer() {
-	StartDB()
+	db_Start()
 
 	setupCMDHandlers()
 
