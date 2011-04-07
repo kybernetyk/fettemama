@@ -108,7 +108,7 @@ func process(session *BlogSession, user_input string) {
 			return
 		}
 		id, _ := strconv.Atoi(items[1])
-		post, err := FetchPost(id)
+		post, err := g_DB.Get(id)
 		if err != nil {
 			session.write_chan <- "error: " + err.String() + "\n"
 			return
@@ -149,7 +149,7 @@ func setupCMDHandlers() {
 
 	cmd_handlers["post"] = CommandHandler{
 		handler: func(commandline string, items []string) string {
-			id, err := StorePost("hallo, das ist content")
+			id, err := g_DB.Put("hallo, das ist content")
 			if err != nil {
 				return "error: " + err.String() + "\n"
 			}
@@ -222,10 +222,10 @@ func serverFunc() {
 }
 
 func RunServer() {
-	db_Start()
-
+	defer g_DB.Disconnect()
+	
+	g_DB.Connect()
 	setupCMDHandlers()
-
 	go serverFunc()
 
 	for {

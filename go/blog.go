@@ -11,7 +11,7 @@ type BlogPost struct {
 }
 
 func RenderPost(post_id int) string {
-	post, err := FetchPost(post_id)
+	post, err := g_DB.Get(post_id)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}

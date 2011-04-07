@@ -2,7 +2,8 @@ include $(GOROOT)/src/Make.inc
 
 TARG=blog
 GOFILES=\
-	dumbdb.go\
+	db.go\
+	file_db.go\
 	blog.go\
 	server.go\
 	main.go
