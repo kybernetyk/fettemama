@@ -14,7 +14,7 @@ TARG = main
 # list of objects to be used to build the executable 
 # note: $O is the target architecture - see above 
 # note: list order of dependence with least dependent first 
-OBJS = blog.$O dumbdb.$O main.$O
+OBJS = blog.$O dumbdb.$O server.$O main.$O
 $(TARG): $(OBJS) 
 	$(LD) -o $@ $@.$O 
 	@echo "Executable is: $@" 
