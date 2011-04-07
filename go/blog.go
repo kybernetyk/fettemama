@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 type BlogPost struct {
@@ -31,6 +32,7 @@ func NewTelnetBlogRenderer() *TelnetBlogRenderer {
 }
 
 func (br *TelnetBlogRenderer) RenderPost(post *BlogPost) string {
-	s := fmt.Sprintf("ID: %d\nDate: %s\nContent: %s\n", post.Id, post.Timestamp, post.Content)
+	t := time.SecondsToLocalTime(post.Timestamp)
+	s := fmt.Sprintf("ID: %d\nDate: %s\nContent: %s\n", post.Id, t.String(), post.Content)
 	return s
 }

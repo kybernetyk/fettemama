@@ -137,10 +137,20 @@ func (srv *TelnetServer) setupCMDHandlers() {
 				return "syntax: post <your awesome post>\n"
 			}
 			content := strings.Join(items[1:], " ")
-			id, err := srv.db.Put(content)
+			mi := srv.db.GetMetaInfo()
+			mi.LastPostId++;
+
+			post := BlogPost{
+				Content: content,
+				Timestamp: time.Seconds(),
+				Id: mi.LastPostId,
+			}
+			
+			id, err := srv.db.Put(&post)
 			if err != nil {
 				return "error: " + err.String() + "\n"
 			}
+			srv.db.SaveMetaInfo(mi)
 			s := fmt.Sprintf("saved post with id %d\n", id)
 			return s
 		},
@@ -157,7 +167,7 @@ func (srv *TelnetServer) setupCMDHandlers() {
 				return "error: " + err.String() + "\n"
 			}
 			
-			mi := getMetaInfo()
+			mi := srv.db.GetMetaInfo()
 			mi.LastCommentId++;
 			
 			nick := items[2]
@@ -172,11 +182,11 @@ func (srv *TelnetServer) setupCMDHandlers() {
 			}
 			post.Comments = append(post.Comments, comment)	
 			fmt.Println(post.Comments)	
-			i, err := srv.db.Update(&post)
+			i, err := srv.db.Put(&post)
 			if err != nil {
 				return "error: " + err.String() + "\n"
 			}
-			saveMetaInfo(mi);
+			srv.db.SaveMetaInfo(mi);
 			
 			s := fmt.Sprintf("commented post with id %d\n", i)
 			return s
