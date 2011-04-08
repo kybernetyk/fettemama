@@ -135,9 +135,7 @@ func openPostByID(post_id int) (post BlogPost, err os.Error) {
 		//	err = os.NewError(string("post id " + strconv.Itoa(post_id) + " doesn't exist!"))
 		return
 	}
-	
 	json.Unmarshal(contents, &post)
-
 	return
 }
 

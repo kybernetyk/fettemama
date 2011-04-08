@@ -24,35 +24,52 @@ const (
 
 type BlogSession struct {
 	conn             net.Conn
-	db               BlogDB
-	formatter        BlogFormatter
+	parent_server   *TelnetServer
 
 	write_chan       chan string
 	read_chan        chan string
 	control_chan     chan string
+
 	active           bool
 	permission_level int //0 - regular visitor, 5 - blogger, 10 - superuser 
 	state            int
 	input_buffer     string //buffer for new posts, comments, etc. which can go over multiple lines of input
+	
+	id              int
 }
 
 
 //////////////// session
-func NewBlogSession(conn net.Conn, db BlogDB, formatter BlogFormatter, ) *BlogSession {
-	session := BlogSession{}
+func NewBlogSession(server *TelnetServer, conn net.Conn) *BlogSession {
+	session := &BlogSession{}
+	session.parent_server = server
 	session.write_chan = make(chan string)
 	session.read_chan = make(chan string)
 	session.control_chan = make(chan string)
-	session.db = db
 	session.conn = conn
 	session.active = true
 	session.permission_level = 0
 	session.state = state_reading
-	session.formatter = formatter
-
-	return &session
+	
+	return session
 }
 
+//returns the sessions parent server
+func (s *BlogSession) Server() *TelnetServer {
+    return s.parent_server
+}
+
+//returns the current database
+func (s *BlogSession) Db() BlogDB {
+    return s.Server().db
+}
+
+//returns the current formatter
+func (s *BlogSession) BlogFormatter() BlogFormatter {
+    return s.Server().formatter
+}
+
+//closes channels [?]
 func (s *BlogSession) Close() {
     //do I have to close channels explicitely?
     
@@ -61,10 +78,25 @@ func (s *BlogSession) Close() {
 	close(s.control_chan)*/
 }
 
+//initiates disconnect
 func (s *BlogSession) Disconnect() {
-	s.active = false
+	s.control_chan <- "disconnect"
 }
 
+//session mainloop
+func (session *BlogSession) Run() {
+    for session.active {
+		select {
+		case status := <-session.control_chan:
+			if status == "disconnect" {
+				//session.Disconnect()
+				session.active = false
+			}
+		}
+	}
+}
+
+//send text
 func (s *BlogSession) Send(text string) {
 	s.write_chan <- text
 }
@@ -121,7 +153,7 @@ func (session *BlogSession) connWriter() {
 		}
 		_, err = (session.conn).Write(b)
 		if err != nil {
-			session.control_chan <- "disconnect"
+			session.Disconnect()
 		}
 	}
 }
@@ -139,7 +171,7 @@ func (session *BlogSession) inputProcessor() {
 }
 
 func (session *BlogSession) processInput(user_input string) {
-	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input
+	session.Server().PostStatus("* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input)
 	items := strings.Split(user_input, " ", -1)
 
 	//handle multiline posting mode
@@ -152,7 +184,7 @@ func (session *BlogSession) processInput(user_input string) {
                 return
             }
                 
-			mi := session.db.GetMetaInfo()
+			mi := session.Db().GetMetaInfo()
 			mi.LastPostId++
 
 			post := BlogPost{
@@ -161,11 +193,11 @@ func (session *BlogSession) processInput(user_input string) {
 				Id:        mi.LastPostId,
 			}
 
-			id, err := session.db.Put(&post)
+			id, err := session.Db().Put(&post)
 			if err != nil {
 				session.Send("error: " + err.String() + "\n")
 			}
-			session.db.SaveMetaInfo(mi)
+			session.Db().SaveMetaInfo(mi)
 			s := fmt.Sprintf("saved post with id %d\n", id)
 			session.Send(s)
 			session.input_buffer = ""
@@ -183,7 +215,8 @@ func (session *BlogSession) processInput(user_input string) {
 		return
 	}
 	if session.permission_level >= k.min_perm_level {
-		session.Send(k.handler(session, user_input, items))
+	    handler := k.handler
+		session.Send( handler(session, items) )
 	} else {
 		session.Send("error: privileges too low\n")
 	}
@@ -196,12 +229,12 @@ func (session *BlogSession) handleRead(items []string) string {
 		return "syntax: read <post_id>\n"
 	}
 	id, _ := strconv.Atoi(items[1])
-	post, err := session.db.Get(id)
+	post, err := session.Db().Get(id)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
 	
-	return session.formatter.FormatPost(&post, true)
+	return session.BlogFormatter().FormatPost(&post, true)
 }
 
 func (s *BlogSession) handleAuth(items []string) string {
@@ -246,12 +279,12 @@ func (session *BlogSession) handleComment(items []string) string {
 		return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
 	}
 	post_id, _ := strconv.Atoi(items[1])
-	post, err := session.db.Get(post_id)
+	post, err := session.Db().Get(post_id)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
 
-	mi := session.db.GetMetaInfo()
+	mi := session.Db().GetMetaInfo()
 	mi.LastCommentId++
 
 	nick := items[2]
@@ -266,13 +299,24 @@ func (session *BlogSession) handleComment(items []string) string {
 	}
 	post.Comments = append(post.Comments, comment)
 	fmt.Println(post.Comments)
-	i, err := session.db.Put(&post)
+	i, err := session.Db().Put(&post)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
-	session.db.SaveMetaInfo(mi)
+	session.Db().SaveMetaInfo(mi)
 
 	s := fmt.Sprintf("commented post with id %d\n", i)
 	return s
-	
+}
+
+func (session *BlogSession) handleBroadcast(items []string) string {
+    if len(items) < 2 {
+        return "syntax: broadcast <your broadcast>\n"
+    }
+    
+    message := strings.Join(items[1:], " ")
+    message += "\n"
+    session.Server().Broadcast(message)
+    
+    return "Broadcast sent\n"
 }
