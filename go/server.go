@@ -2,29 +2,17 @@ package main
 
 import (
 	"net"
-	"os"
 	"fmt"
-	"bufio"
-	"strings"
-	"strconv"
-	"time"
 )
 
-var (
+
+const (
 	port   = 1337
-	banner = "> ISCH FICK DEINE MUDDA\n"
 )
-
-type BlogSession struct {
-	write_chan   chan string
-	read_chan    chan string
-	control_chan chan string
-	conn         net.Conn
-	active       bool
-}
 
 type CommandHandler struct {
-	handler func(string, []string) string
+	handler        func(*BlogSession, string, []string) string
+	min_perm_level int //the permission level needed to execute this command
 }
 
 var master_chan = make(chan string)
@@ -32,213 +20,96 @@ var status_chan = make(chan string)
 var cmd_handlers = make(map[string]CommandHandler)
 
 type TelnetServer struct {
-	db BlogDB
-	renderer BlogRenderer
+	db        BlogDB
+	formatter BlogFormatter
 }
 
-func NewTelnetServer(db BlogDB, renderer BlogRenderer) *TelnetServer {
-	ts := TelnetServer {
-		db: db,
-		renderer: renderer,
+//// server
+func NewTelnetServer(db BlogDB, formatter BlogFormatter) *TelnetServer {
+	ts := TelnetServer{
+		db:        db,
+		formatter: formatter,
 	}
-	
+
 	return &ts
 }
 
-
-func (srv *TelnetServer) readline(b *bufio.Reader) (p []byte, err os.Error) {
-	if p, err = b.ReadSlice('\n'); err != nil {
-		return nil, err
-	}
-	var i int
-	for i = len(p); i > 0; i-- {
-		if c := p[i-1]; c != ' ' && c != '\r' && c != '\t' && c != '\n' {
-			break
-		}
-	}
-	return p[0:i], nil
-}
-
-func (srv *TelnetServer) clientReader(session *BlogSession) {
-	var line []byte
-	br := bufio.NewReader(session.conn)
-
-	for {
-		line, _ = srv.readline(br)
-		s := string(line)
-		if !session.active {
-			break
-		}
-
-		session.read_chan <- s
-	}
-}
-
-func (srv *TelnetServer) clientWriter(session *BlogSession) {
-	var err os.Error
-	for {
-		b := []byte(<-session.write_chan)
-		if !session.active {
-			break
-		}
-		_, err = (session.conn).Write(b)
-		if err != nil {
-			session.control_chan <- "disconnect"
-		}
-	}
-}
-
-func (srv *TelnetServer) process(session *BlogSession, user_input string) {
-	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input
-	items := strings.Split(user_input, " ", -1)
-
-	//first special commands
-	if items[0] == "quit" {
-		session.control_chan <- "disconnect"
-		return
-	}
-
-	if items[0] == "die" {
-		master_chan <- "diediedie"
-		session.control_chan <- "disconnect"
-		return
-	}
-
-	//now the content fetching comments
-	k, ok := cmd_handlers[items[0]]
-	if !ok {
-		//status_chan <- "couldn't find a command for " + items[0] + "\n"
-		session.write_chan <- "command not implemented\n"
-		return
-	}
-
-	session.write_chan <- k.handler(user_input, items)
-}
-
-
 func (srv *TelnetServer) setupCMDHandlers() {
-	cmd_handlers["read"] = CommandHandler{
-		handler: func(commandline string, items []string) string {
-			if len(items) != 2 {
-				return "syntax: read <post_id>\n"
-			}
-			id, _ := strconv.Atoi(items[1])
-			post, err := srv.db.Get(id)
-			if err != nil {
-				return "error: " + err.String() + "\n"
-			}
-			return srv.renderer.RenderPost(&post)
+    //I have no idea how to pass a reference to a function with a receiver
+    //thus those ugly wrappers >.<
+    //at first I had something like handler: (*BlogSession)func(string,string) string
+    //in mind
+
+	cmd_handlers["quit"] = CommandHandler{
+		handler: func(session *BlogSession, commandline string, items []string) string {
+			session.control_chan <- "disconnect"
+			return "ok\n"
 		},
+		min_perm_level: 0,
+	}
+
+	cmd_handlers["die"] = CommandHandler{
+		handler: func(session *BlogSession, commandline string, items []string) string {
+			master_chan <- "diediedie"
+			session.control_chan <- "disconnect"
+			return "ok\n"
+		},
+		min_perm_level: 10,
+	}
+
+	cmd_handlers["auth"] = CommandHandler{
+		handler: func(session *BlogSession, commandline string, items []string) string {
+			return session.handleAuth(items)
+		},
+		min_perm_level: 0,
+	}
+
+	cmd_handlers["read"] = CommandHandler{
+		handler: func(session *BlogSession, commandline string, items []string) string {
+            return session.handleRead(items)
+		},
+		min_perm_level: 0,
 	}
 
 	cmd_handlers["post"] = CommandHandler{
-		handler: func(commandline string, items []string) string {
-			if len(items) < 2 {
-				return "syntax: post <your awesome post>\n"
-			}
-			content := strings.Join(items[1:], " ")
-			mi := srv.db.GetMetaInfo()
-			mi.LastPostId++;
-
-			post := BlogPost{
-				Content: content,
-				Timestamp: time.Seconds(),
-				Id: mi.LastPostId,
-			}
-			
-			id, err := srv.db.Put(&post)
-			if err != nil {
-				return "error: " + err.String() + "\n"
-			}
-			srv.db.SaveMetaInfo(mi)
-			s := fmt.Sprintf("saved post with id %d\n", id)
-			return s
+		handler: func(session *BlogSession, commandline string, items []string) string {
+            return session.handlePost(items)
 		},
+		min_perm_level: 5,
 	}
-	
+
 	cmd_handlers["comment"] = CommandHandler{
-		handler: func(commandline string, items []string) string {
-			if len(items) < 3 {
-				return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
-			}
-			post_id, _ := strconv.Atoi(items[1])
-			post, err := srv.db.Get(post_id)
-			if err != nil {
-				return "error: " + err.String() + "\n"
-			}
-			
-			mi := srv.db.GetMetaInfo()
-			mi.LastCommentId++;
-			
-			nick := items[2]
-			content := strings.Join(items[3:], " ")
-			comment_id := mi.LastCommentId
-
-			comment := PostComment{
-				Content: content,
-				Author: nick,
-				Timestamp: time.Seconds(),
-				Id: comment_id,
-			}
-			post.Comments = append(post.Comments, comment)	
-			fmt.Println(post.Comments)	
-			i, err := srv.db.Put(&post)
-			if err != nil {
-				return "error: " + err.String() + "\n"
-			}
-			srv.db.SaveMetaInfo(mi);
-			
-			s := fmt.Sprintf("commented post with id %d\n", i)
-			return s
+		handler: func(session *BlogSession, commandline string, items []string) string {
+            return session.handleComment(items)
 		},
+		min_perm_level: 0,
 	}
 
 }
 
-func (srv *TelnetServer) inputProcessor(session *BlogSession) {
-	for {
-		user_input := <-session.read_chan
-		if !session.active {
-			break
-		}
-		srv.process(session, user_input)
-	}
-}
-
+//spawn new blog session for client
 func (srv *TelnetServer) handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	session := BlogSession{}
-
-	session.write_chan = make(chan string)
-	session.read_chan = make(chan string)
-	session.control_chan = make(chan string)
-	session.conn = conn
-	session.active = true
-
-	go srv.clientReader(&session)
-	go srv.clientWriter(&session)
-	go srv.inputProcessor(&session)
+	session := NewBlogSession(conn, srv.db, srv.formatter)
+	go session.connReader()
+	go session.connWriter()
+	go session.inputProcessor()
 
 	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] new connection"
-	session.write_chan <- banner
-	b := true
-	for b {
+	session.sendVersion()
+	session.sendPrompt()
+
+	for session.active {
 		select {
 		case status := <-session.control_chan:
-			//	fmt.Println("control chan: ", status)
 			if status == "disconnect" {
-				session.active = false
-				b = false
+				session.Disconnect()
 			}
 		}
 	}
-
-	close(session.read_chan)
-	close(session.write_chan)
-	close(session.control_chan)
-
 	status_chan <- "* [" + (session.conn).RemoteAddr().String() + "] disconnected"
+	
 }
 
 func (srv *TelnetServer) serverFunc() {

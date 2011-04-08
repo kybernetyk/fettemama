@@ -2,8 +2,8 @@ package main
 
 func main() {
 	db := NewFileDB();
-	renderer := NewTelnetBlogRenderer()
-	server := NewTelnetServer(db, renderer)
+	formatter := NewTelnetBlogFormatter()
+	server := NewTelnetServer(db, formatter)
 	
 	server.Run()
 }

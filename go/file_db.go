@@ -36,7 +36,7 @@ type MetaInfo struct {
 
 func (db *FileDB) GetMetaInfo() MetaInfo {
 	db.metaInfoMutex.RLock()
-	defer db.metaInfoMutex.Unlock()
+	defer db.metaInfoMutex.RUnlock()
 	
 	fn := "posts/metainfo.json"
 	contents, err := ioutil.ReadFile(fn)

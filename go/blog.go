@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
+	"strings"
 )
 
 type BlogPost struct {
@@ -19,20 +20,39 @@ type PostComment struct {
 	Id        int
 }
 
-type BlogRenderer interface {
-	RenderPost(post *BlogPost) string
+type BlogFormatter interface {
+	FormatPost(post *BlogPost, withComments bool) string
+	FormatComment(comment *PostComment) string
 }
 
-type TelnetBlogRenderer struct {
+type TelnetBlogFormatter struct {
 	//empty for now
 }
 
-func NewTelnetBlogRenderer() *TelnetBlogRenderer {
-	return &TelnetBlogRenderer{}
+func NewTelnetBlogFormatter() *TelnetBlogFormatter {
+	return &TelnetBlogFormatter{}
 }
 
-func (br *TelnetBlogRenderer) RenderPost(post *BlogPost) string {
+func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) string {
 	t := time.SecondsToLocalTime(post.Timestamp)
-	s := fmt.Sprintf("ID: %d\nDate: %s\nContent: %s\n", post.Id, t.String(), post.Content)
+	s := fmt.Sprintf("Post #%d, %s\n", post.Id, t.String())
+	
+	lines := strings.Split(post.Content, "\n", -1)
+	for _, line := range lines {
+	    s += fmt.Sprintf("\t%s\n",line)
+	}
+	
+	if !withComments{
+	    return s;
+	}
+	    
+    s += fmt.Sprintf("\nComments for post #%d:\n", post.Id)
+	for _, c := range post.Comments {
+        s += bf.FormatComment(&c)
+	}
 	return s
+}
+
+func (bf *TelnetBlogFormatter) FormatComment(comment *PostComment) string {
+    return fmt.Sprintf("\t*[%s] %s\n", comment.Author, comment.Content)
 }
