@@ -1,7 +1,7 @@
 package main
 
 func main() {
-	db := NewFileDB();
+	db := NewMongoDB();
 	formatter := NewTelnetBlogFormatter()
 	server := NewTelnetServer(db, formatter)
 	

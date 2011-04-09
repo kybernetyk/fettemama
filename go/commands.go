@@ -104,11 +104,13 @@ func tch_handleRead(session BlogSession, items []string) string {
 	if len(items) != 2 {
 		return "syntax: read <post_id>\n"
 	}
-	id, _ := strconv.Atoi(items[1])
-	post, err := session.Db().Get(id)
+	id, _ := strconv.Atoi64(items[1])
+	post, err := session.Db().GetPost(id)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
+
+	post.Comments, _ = session.Db().GetComments(post.Id)
 
 	return session.BlogFormatter().FormatPost(&post, true)
 }
@@ -139,35 +141,25 @@ func tch_handleComment(session BlogSession, items []string) string {
 	if len(items) < 3 {
 		return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
 	}
-	post_id, _ := strconv.Atoi(items[1])
-	post, err := session.Db().Get(post_id)
-	if err != nil {
-		return "error: " + err.String() + "\n"
-	}
 
-	mi := session.Db().GetMetaInfo()
-	mi.LastCommentId++
+    post_id, _ := strconv.Atoi64(items[1])
+    nick := items[2]
+    content := strings.Join(items[3:], " ")
+    
+    comment := PostComment{
+     Content:   content,
+     Author:    nick,
+     Timestamp: time.Seconds(),
+     PostId: post_id,
+    }
 
-	nick := items[2]
-	content := strings.Join(items[3:], " ")
-	comment_id := mi.LastCommentId
-
-	comment := PostComment{
-		Content:   content,
-		Author:    nick,
-		Timestamp: time.Seconds(),
-		Id:        comment_id,
-	}
-	post.Comments = append(post.Comments, comment)
-	fmt.Println(post.Comments)
-	i, err := session.Db().Put(&post)
-	if err != nil {
-		return "error: " + err.String() + "\n"
-	}
-	session.Db().SaveMetaInfo(mi)
-
-	s := fmt.Sprintf("commented post with id %d\n", i)
-	return s
+    i, err := session.Db().StoreComment(&comment)
+    if err != nil {
+     return "error: " + err.String() + "\n"
+    }
+    
+    s := fmt.Sprintf("commented post %d. your comment's id: %d\n",post_id, i)
+    return s
 }
 
 func tch_handleBroadcast(session BlogSession, items []string) string {
@@ -185,25 +177,20 @@ func tch_handleBroadcast(session BlogSession, items []string) string {
 
 func tch_handlePostingEnd(session BlogSession, items []string) string {
 	session.SetState(state_reading)
-	mi := session.Db().GetMetaInfo()
-	mi.LastPostId++
 
 	post := BlogPost{
 		Content:   strings.Trim(session.InputBuffer(), "\n\r"),
 		Timestamp: time.Seconds(),
-		Id:        mi.LastPostId,
+		Id:        0,   //0 = create new post
 	}
 
-	id, err := session.Db().Put(&post)
+	id, err := session.Db().StorePost(&post)
 	if err != nil {
 	 return "error: " + err.String() + "\n"
 	}
-	session.Db().SaveMetaInfo(mi)
+
 	s := fmt.Sprintf("saved post with id %d\n", id)
 	return s
-	// session.input_buffer += user_input
-	// session.input_buffer += "\n"
-	// return;
 }
 
 func tch_handleHelp(session BlogSession, items []string) string {
