@@ -13,8 +13,10 @@ type MongoDB struct {
 
 	posts    *mongo.Collection
 	comments *mongo.Collection
-	postmu   sync.RWMutex
-	commentmu   sync.RWMutex
+
+	//not sure if the driver does its own locking ...
+	postmu    sync.RWMutex
+	commentmu sync.RWMutex
 }
 
 func NewMongoDB() *MongoDB {
@@ -41,6 +43,8 @@ func (md *MongoDB) Disconnect() {
 
 }
 
+//warning: it will marhsall the comments list - so we need to change this
+//if we enable updating/editing posts
 func (md *MongoDB) StorePost(post *BlogPost) (id int64, err os.Error) {
 	md.postmu.Lock()
 	defer md.postmu.Unlock()
@@ -59,34 +63,72 @@ func (md *MongoDB) StorePost(post *BlogPost) (id int64, err os.Error) {
 	return
 }
 
-func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
+func (md *MongoDB) getPostsForQuery(qryobj interface{}) (posts []BlogPost, err os.Error) {
 	md.postmu.Lock()
 	defer md.postmu.Unlock()
 
-	m := map[string]int64{"id": post_id}
 	var query mongo.BSON
-	query, err = mongo.Marshal(m)
+	query, err = mongo.Marshal(qryobj)
 	if err != nil {
 		return
 	}
 
-	count, _ := md.comments.Count(query)
-	if count == 0 {
-	    err = os.NewError("Post Not Found")
-	    return
+    // count, _ := md.posts.Count(query)
+    // if count == 0 {
+    //  err = os.NewError("COUNT 0 Post Not Found")
+    //  return
+    // }
+
+	var docs *mongo.Cursor
+	docs, err = md.posts.FindAll(query)
+	if err != nil {
+		return
 	}
 
 	var doc mongo.BSON
-	doc, err = md.posts.FindOne(query)
-	if err != nil {
-		err = os.NewError("Couldn't open post")
+	for docs.HasMore() {
+		doc, err = docs.GetNext()
+		if err != nil {
+			return
+		}
+		var post BlogPost
+		err = mongo.Unmarshal(doc.Bytes(), &post)
+		if err != nil {
+			return
+		}
+		posts = append(posts, post)
+	}
+    // if len(posts) == 0 {
+    //     err = os.NewError("no posts found")
+    // }
+	return
+}
+
+
+
+func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
+     type q map[string]interface{}
+
+     m := q{"id" : post_id}
+
+     //find sort example
+     // m := q{
+     //     "$query": q{"id": q{"$gte" : post_id}},
+     //     "$orderby": q{"timestamp": -1},
+     // }
+
+	var posts []BlogPost
+	posts, err = md.getPostsForQuery(m)
+	if err != nil || len(posts) == 0 {
+		err = os.NewError("Post not found.")
 		return
 	}
 
-	err = mongo.Unmarshal(doc.Bytes(), &post)
-	if err != nil {
-		return
-	}
+	post = posts[0]
+	return
+}
+
+func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error) {
 	return
 }
 
@@ -114,10 +156,11 @@ func (md *MongoDB) StoreComment(comment *PostComment) (id int64, err os.Error) {
 	return
 }
 
+//get comments belonging to a post
 func (md *MongoDB) GetComments(post_id int64) (comments []PostComment, err os.Error) {
-    md.commentmu.Lock()
+	md.commentmu.Lock()
 	defer md.commentmu.Unlock()
-	
+
 	m := map[string]int64{"postid": post_id}
 	var query mongo.BSON
 	query, err = mongo.Marshal(m)

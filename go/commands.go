@@ -51,7 +51,7 @@ func (h *TelnetCommandHandler) HandleCommand(session BlogSession, commandline []
 	//handle normal reading mode
 	k, ok := cmdmap[commandline[0]]
 	if !ok {
-        //if users is posting we don't want to send error messages for his input
+        //if user is posting we don't want to send error messages for his input
         if session.State() != state_posting {
             return "error: command not implemented\n"    
         } else {
