@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"bufio"
 	"strings"
-	"strconv"
-	"time"
+//	"time"
 	"crypto/md5"
 )
 
@@ -22,7 +21,32 @@ const (
 	state_posting = 1
 )
 
-type BlogSession struct {
+type BlogSession interface {
+    Server() *TelnetServer
+    Db() BlogDB
+    BlogFormatter() BlogFormatter
+    Close()
+    Disconnect()
+    Id() int
+    SetId(id int)
+    Run()
+    
+    Send(text string)
+    SendPrompt()
+    SendVersion()
+    
+    PermissionLevel() int
+    Auth(pwd string) bool
+    
+    State() int
+    SetState(state int)
+    
+    ResetInputBuffer()
+    InputBuffer() string
+    
+}
+
+type TelnetBlogSession struct {
 	conn             net.Conn
 	parent_server   *TelnetServer
 
@@ -36,12 +60,16 @@ type BlogSession struct {
 	input_buffer     string //buffer for new posts, comments, etc. which can go over multiple lines of input
 	
 	id              int
+	
+	commandHandler BlogCommandHandler
 }
 
 
+//var cmd_handlers = make(map[string]CommandHandler)
+
 //////////////// session
-func NewBlogSession(server *TelnetServer, conn net.Conn) *BlogSession {
-	session := &BlogSession{}
+func NewTelnetBlogSession(server *TelnetServer, conn net.Conn) *TelnetBlogSession {
+	session := &TelnetBlogSession{}
 	session.parent_server = server
 	session.write_chan = make(chan string)
 	session.read_chan = make(chan string)
@@ -50,27 +78,27 @@ func NewBlogSession(server *TelnetServer, conn net.Conn) *BlogSession {
 	session.active = true
 	session.permission_level = 0
 	session.state = state_reading
-	
+	session.commandHandler = NewTelnetCommandHandler()
 	return session
 }
 
 //returns the sessions parent server
-func (s *BlogSession) Server() *TelnetServer {
+func (s *TelnetBlogSession) Server() *TelnetServer {
     return s.parent_server
 }
 
 //returns the current database
-func (s *BlogSession) Db() BlogDB {
+func (s *TelnetBlogSession) Db() BlogDB {
     return s.Server().db
 }
 
 //returns the current formatter
-func (s *BlogSession) BlogFormatter() BlogFormatter {
+func (s *TelnetBlogSession) BlogFormatter() BlogFormatter {
     return s.Server().formatter
 }
 
 //closes channels [?]
-func (s *BlogSession) Close() {
+func (s *TelnetBlogSession) Close() {
     //do I have to close channels explicitely?
     
 /*	close(s.read_chan)
@@ -79,12 +107,12 @@ func (s *BlogSession) Close() {
 }
 
 //initiates disconnect
-func (s *BlogSession) Disconnect() {
+func (s *TelnetBlogSession) Disconnect() {
 	s.control_chan <- "disconnect"
 }
 
 //session mainloop
-func (session *BlogSession) Run() {
+func (session *TelnetBlogSession) Run() {
     for session.active {
 		select {
 		case status := <-session.control_chan:
@@ -97,11 +125,11 @@ func (session *BlogSession) Run() {
 }
 
 //send text
-func (s *BlogSession) Send(text string) {
+func (s *TelnetBlogSession) Send(text string) {
 	s.write_chan <- text
 }
 
-func (s *BlogSession) sendPrompt() {
+func (s *TelnetBlogSession) SendPrompt() {
 	if s.state == state_reading {
 		s.Send("#: ")
 		return
@@ -111,12 +139,60 @@ func (s *BlogSession) sendPrompt() {
 		return
 	}
 }
-
-func (s *BlogSession) sendVersion() {
+func (s *TelnetBlogSession) SendVersion() {
 	s.Send("fettemama.org blog system version v0.2\n\t(c) don vito 2011\n\twritten in Go\n\tuses textfiles for data storage\n\n")
 }
 
-func (s *BlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
+func (s *TelnetBlogSession) Id() int {
+    return s.id
+}
+func (s *TelnetBlogSession) SetId(id int) {
+    s.id = id
+}
+
+func (s *TelnetBlogSession) PermissionLevel() int {
+    return s.permission_level
+}
+
+func (s *TelnetBlogSession) Auth(pwd string) bool {
+     prev_level := s.permission_level
+     hasher := md5.New()
+     hasher.Write([]byte(pwd))
+     h_pwd := fmt.Sprintf("%x", hasher.Sum())
+    
+     if h_pwd == user_pass {
+         s.permission_level = 0
+     }
+     if h_pwd == blogger_pass {
+         s.permission_level = 5
+     }
+     if h_pwd == admin_pass {
+         s.permission_level = 10
+     }
+    
+     if prev_level == s.permission_level {
+        return false
+     }
+
+    return true
+}
+
+func (s *TelnetBlogSession) State() int {
+    return s.state
+}
+func (s *TelnetBlogSession) SetState(state int) {
+    s.state = state
+}
+
+func (s *TelnetBlogSession) InputBuffer() string {
+    return s.input_buffer
+}
+
+func (s *TelnetBlogSession) ResetInputBuffer() {
+    s.input_buffer = ""
+}
+
+func (s *TelnetBlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
 	if p, err = b.ReadSlice('\n'); err != nil {
 		return nil, err
 	}
@@ -129,7 +205,7 @@ func (s *BlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
 	return p[0:i], nil
 }
 
-func (session *BlogSession) connReader() {
+func (session *TelnetBlogSession) connReader() {
 	var line []byte
 	br := bufio.NewReader(session.conn)
 
@@ -144,7 +220,7 @@ func (session *BlogSession) connReader() {
 	}
 }
 
-func (session *BlogSession) connWriter() {
+func (session *TelnetBlogSession) connWriter() {
 	var err os.Error
 	for {
 		b := []byte(<-session.write_chan)
@@ -159,164 +235,23 @@ func (session *BlogSession) connWriter() {
 }
 
 
-func (session *BlogSession) inputProcessor() {
+func (session *TelnetBlogSession) inputProcessor() {
 	for {
 		user_input := <-session.read_chan
 		if !session.active {
 			break
 		}
 		session.processInput(user_input)
-		session.sendPrompt()
+		session.SendPrompt()
 	}
 }
 
-func (session *BlogSession) processInput(user_input string) {
+func (session *TelnetBlogSession) processInput(user_input string) {
 	session.Server().PostStatus("* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input)
 	items := strings.Split(user_input, " ", -1)
-
-	//handle multiline posting mode
-	if session.state == state_posting {
-	    if items[0] == "$end" {
-			session.state = state_reading
-            
-            if len(session.input_buffer) <= 0 {
-                session.Send("error: post empty?\n")
-                return
-            }
-                
-			mi := session.Db().GetMetaInfo()
-			mi.LastPostId++
-
-			post := BlogPost{
-				Content:   strings.Trim(session.input_buffer, "\n\r"),
-				Timestamp: time.Seconds(),
-				Id:        mi.LastPostId,
-			}
-
-			id, err := session.Db().Put(&post)
-			if err != nil {
-				session.Send("error: " + err.String() + "\n")
-			}
-			session.Db().SaveMetaInfo(mi)
-			s := fmt.Sprintf("saved post with id %d\n", id)
-			session.Send(s)
-			session.input_buffer = ""
-			return
-		}
-		session.input_buffer += user_input
-		session.input_buffer += "\n"
-		return;
-	}
-
-	//handle normal reading mode
-	k, ok := cmd_handlers[items[0]]
-	if !ok {
-		session.Send("error: command not implemented\n")
-		return
-	}
-	if session.permission_level >= k.min_perm_level {
-	    handler := k.handler
-		session.Send( handler(session, items) )
-	} else {
-		session.Send("error: privileges too low\n")
-	}
-
+	session.input_buffer += user_input
+	session.input_buffer += "\n"
+    session.Send(session.commandHandler.HandleCommand(session, items))
+    //handle handle command
 }
 
-//session handler
-func (session *BlogSession) handleRead(items []string) string {
-    if len(items) != 2 {
-		return "syntax: read <post_id>\n"
-	}
-	id, _ := strconv.Atoi(items[1])
-	post, err := session.Db().Get(id)
-	if err != nil {
-		return "error: " + err.String() + "\n"
-	}
-	
-	return session.BlogFormatter().FormatPost(&post, true)
-}
-
-func (s *BlogSession) handleAuth(items []string) string {
-    if len(items) != 2 {
-    	return "syntax: auth <password>\n"
-    }
-    password := items[1]
-
-	prev_level := s.permission_level
-
-	hasher := md5.New()
-	hasher.Write([]byte(password))
-	h_pwd := fmt.Sprintf("%x", hasher.Sum())
-
-	if h_pwd == user_pass {
-		s.permission_level = 0
-	}
-	if h_pwd == blogger_pass {
-		s.permission_level = 5
-	}
-	if h_pwd == admin_pass {
-		s.permission_level = 10
-	}
-
-	if prev_level == s.permission_level {
-		return "couldn't change permission level\n"
-	}
-
-	return fmt.Sprintf("permission level %d granted\n", s.permission_level)
-}
-
-func (session *BlogSession) handlePost(items []string) string {
-    if len(items) != 1 {
-		return "syntax: post\n"
-	}
-	session.state = state_posting
-	return "enter post. enter $end to end input and save post.\n01234567890123456789012345678901234567890123456789012345678901234567890123456789\n"
-}
-
-func (session *BlogSession) handleComment(items []string) string {
-    if len(items) < 3 {
-		return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
-	}
-	post_id, _ := strconv.Atoi(items[1])
-	post, err := session.Db().Get(post_id)
-	if err != nil {
-		return "error: " + err.String() + "\n"
-	}
-
-	mi := session.Db().GetMetaInfo()
-	mi.LastCommentId++
-
-	nick := items[2]
-	content := strings.Join(items[3:], " ")
-	comment_id := mi.LastCommentId
-
-	comment := PostComment{
-		Content:   content,
-		Author:    nick,
-		Timestamp: time.Seconds(),
-		Id:        comment_id,
-	}
-	post.Comments = append(post.Comments, comment)
-	fmt.Println(post.Comments)
-	i, err := session.Db().Put(&post)
-	if err != nil {
-		return "error: " + err.String() + "\n"
-	}
-	session.Db().SaveMetaInfo(mi)
-
-	s := fmt.Sprintf("commented post with id %d\n", i)
-	return s
-}
-
-func (session *BlogSession) handleBroadcast(items []string) string {
-    if len(items) < 2 {
-        return "syntax: broadcast <your broadcast>\n"
-    }
-    
-    message := strings.Join(items[1:], " ")
-    message += "\n"
-    session.Server().Broadcast(message)
-    
-    return "Broadcast sent\n"
-}
