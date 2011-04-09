@@ -94,7 +94,9 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 	h.AddCommand(state_reading, "post", BlogCommand{tch_handlePost, 5})
 	h.AddCommand(state_reading, "comment", BlogCommand{tch_handleComment, 0})
 	h.AddCommand(state_reading, "broadcast", BlogCommand{tch_handleBroadcast, 0})
+	h.AddCommand(state_reading, "help", BlogCommand{tch_handleHelp, 0})
 	h.AddCommand(state_posting, "$end", BlogCommand{tch_handlePostingEnd, 0})
+	
 }
 
 
@@ -202,4 +204,16 @@ func tch_handlePostingEnd(session BlogSession, items []string) string {
 	// session.input_buffer += user_input
 	// session.input_buffer += "\n"
 	// return;
+}
+
+func tch_handleHelp(session BlogSession, items []string) string {
+	
+	s := "fettemama help\n";
+	s += "help\n\t* this screen\n"
+	s += "comment <post_id> <your_nick> ...\n\t* add comment to a post\n"
+	s += "post\n\t* create new blog post\n"
+	s += "auth <password>\n\t* change user level\n"
+	s += "read <post_id>\n\t* read a post\n\n"
+
+	return s
 }
