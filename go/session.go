@@ -10,6 +10,7 @@ import (
 	"crypto/md5"
 )
 
+//md5 hashed passwords
 const (
 	user_pass    = "5f4dcc3b5aa765d61d8327deb882cf99" //password :]
 	blogger_pass = "8dcd694437483726d7dbdbf77a862b0f"

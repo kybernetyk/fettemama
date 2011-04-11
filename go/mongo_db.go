@@ -26,7 +26,7 @@ func NewMongoDB() *MongoDB {
 
 func (md *MongoDB) Connect() {
 	var err os.Error
-	md.conn, err = mongo.Connect("127.0.0.1")
+	md.conn, err = mongo.Connect("imac.local")
 	if err != nil {
 		fmt.Println("Couldn't connect to mongo db @ localhost")
 		os.Exit(-1)
@@ -73,11 +73,11 @@ func (md *MongoDB) getPostsForQuery(qryobj interface{}) (posts []BlogPost, err o
 		return
 	}
 
-    // count, _ := md.posts.Count(query)
-    // if count == 0 {
-    //  err = os.NewError("COUNT 0 Post Not Found")
-    //  return
-    // }
+	// count, _ := md.posts.Count(query)
+	// if count == 0 {
+	//  err = os.NewError("COUNT 0 Post Not Found")
+	//  return
+	// }
 
 	var docs *mongo.Cursor
 	docs, err = md.posts.FindAll(query)
@@ -98,24 +98,23 @@ func (md *MongoDB) getPostsForQuery(qryobj interface{}) (posts []BlogPost, err o
 		}
 		posts = append(posts, post)
 	}
-    // if len(posts) == 0 {
-    //     err = os.NewError("no posts found")
-    // }
+	// if len(posts) == 0 {
+	//     err = os.NewError("no posts found")
+	// }
 	return
 }
 
 
-
 func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
-     type q map[string]interface{}
+	type q map[string]interface{}
 
-     m := q{"id" : post_id}
+	m := q{"id": post_id}
 
-     //find sort example
-     // m := q{
-     //     "$query": q{"id": q{"$gte" : post_id}},
-     //     "$orderby": q{"timestamp": -1},
-     // }
+	//find sort example
+	// m := q{
+	//     "$query": q{"id": q{"$gte" : post_id}},
+	//     "$orderby": q{"timestamp": -1},
+	// }
 
 	var posts []BlogPost
 	posts, err = md.getPostsForQuery(m)
@@ -129,6 +128,37 @@ func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 }
 
 func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error) {
+	type q map[string]interface{}
+
+	//	m := q{"id": post_id}
+
+	m := q{
+		"$query":   q{"timestamp": q{"$gte": start_timestamp, "$lt": end_timestamp}},
+		"$orderby": q{"timestamp": -1},
+	}
+
+	posts, err = md.getPostsForQuery(m)
+	if err != nil || len(posts) == 0 {
+		err = os.NewError("Posts not found.")
+		return
+	}
+
+	return
+}
+
+func (md *MongoDB) GetLastNPosts(num_to_get int) (posts []BlogPost, err os.Error) {
+	m := q{
+	//	"$query":   q{"timestamp": q{"$gte": start_timestamp, "$lt": end_timestamp}},
+		"$orderby": q{"timestamp": -1},
+	}
+
+	//var posts []BlogPost
+	posts, err = md.getPostsForQuery(m)
+	if err != nil || len(posts) == 0 {
+		err = os.NewError("Posts not found.")
+		return
+	}
+
 	return
 }
 
