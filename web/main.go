@@ -2,14 +2,20 @@ package main
 
 import (
 	"web"
-//	"fmt"
-	)
+	//	"fmt"
+)
 
+
+var Db *MongoDB
 
 func main() {
-
-web.Get("/", index)
-
-web.Run("0.0.0.0:8080")
+	Db = NewMongoDB()
+    Db.Connect()
+    web.Config.CookieSecret = "7C19QRmwf3mHZ9CPAaPQ0hsWeufKd"
+	web.Get("/", index)
+	web.Get("/post", post)
+	web.Get("/admin", adminGet)
+	web.Post("/admin", adminPost)
+	web.Run("0.0.0.0:8080")
 
 }

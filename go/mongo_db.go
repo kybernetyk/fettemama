@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mikejs/gomongo/mongo"
 	"sync"
+	"time"
 )
 
 type MongoDB struct {
@@ -127,6 +128,39 @@ func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	post = posts[0]
 	return
 }
+
+//returns posts for a certain date
+func (md *MongoDB) GetPostsForDate(date time.Time) (posts []BlogPost, err os.Error) {
+	date.Hour = 0
+	date.Minute = 0
+	date.Second = 0
+
+	start := date.Seconds()
+    end := start + (24 * 60 * 60)
+
+    return md.GetPostsForTimespan(start, end)
+}
+
+//returns posts for a certain month
+func (md *MongoDB) GetPostsForMonth(date time.Time) (posts []BlogPost, err os.Error) {
+	date.Hour = 0
+	date.Minute = 0
+	date.Second = 0
+	date.Day = 1
+	
+	next_month := date
+	next_month.Month ++
+	if next_month.Month > 12 {
+	    next_month.Month = 1
+	    next_month.Year ++
+	}
+
+	start := date.Seconds()
+    end := next_month.Seconds()
+
+    return md.GetPostsForTimespan(start, end)
+}
+
 
 func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error) {
 	type q map[string]interface{}
