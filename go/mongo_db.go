@@ -26,7 +26,7 @@ func NewMongoDB() *MongoDB {
 
 func (md *MongoDB) Connect() {
 	var err os.Error
-	md.conn, err = mongo.Connect("imac.local")
+	md.conn, err = mongo.Connect("127.0.0.1")
 	if err != nil {
 		fmt.Println("Couldn't connect to mongo db @ localhost")
 		os.Exit(-1)
