@@ -22,6 +22,7 @@ add 'admin_pass' : 'yourpass' to the admin collection
 (only python version uses this - for go see session.go)
 
 how to anything:
+connect to port 1337 tcp
 the command 'help' is there for you
 
 the python and go versions differ slightly. python works with passwords where the go version uses user levels.
