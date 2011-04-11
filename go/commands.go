@@ -193,6 +193,27 @@ func tch_handlePostingEnd(session BlogSession, items []string) string {
 	return s
 }
 
+func tch_handleNews(session BlogSession, items []string) string {
+	num := 5
+	if len(items) == 2 {
+		num, _ = strconv.Atoi(items[1])
+	}
+	
+	posts, err := session.Db().GetLastNPosts(num)
+	if err != nil {
+		return "error: " + err.String() + "\n"
+	}
+
+	//post.Comments, _ = session.Db().GetComments(post.Id)
+	s := ""
+	for _, post := range posts {
+		s += session.BlogFormatter().FormatPost(&post, false)
+		s += "\n"
+	}
+
+	return s
+}
+
 func tch_handleHelp(session BlogSession, items []string) string {
 	
 	s := "fettemama help\n";
@@ -200,7 +221,9 @@ func tch_handleHelp(session BlogSession, items []string) string {
 	s += "comment <post_id> <your_nick> ...\n\t* add comment to a post\n"
 	s += "post\n\t* create new blog post\n"
 	s += "auth <password>\n\t* change user level\n"
-	s += "read <post_id>\n\t* read a post\n\n"
-
+	s += "read <post_id>\n\t* read a post\n"
+	s += "news [num of posts]\n\t* shows the last num posts\n"
+	
+	s += "\n"
 	return s
 }
