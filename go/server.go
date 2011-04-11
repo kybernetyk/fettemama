@@ -20,7 +20,7 @@ type TelnetServer struct {
 	status_chan  chan string
 
 	sessionsMutex   sync.RWMutex
-	sessions    map[int]BlogSession
+	sessions    map[int]*BlogSession
 	last_session_id int
 }
 
@@ -33,7 +33,7 @@ func NewTelnetServer(db BlogDB, formatter BlogFormatter) *TelnetServer {
 
 	ts.control_chan = make(chan string)
 	ts.status_chan = make(chan string)
-	ts.sessions = make(map[int]BlogSession)
+	ts.sessions = make(map[int]*BlogSession)
 
 	return ts
 }
@@ -81,7 +81,7 @@ func (srv *TelnetServer) GetUserCount() int {
 	return len(srv.sessions)
 }
 
-func (srv *TelnetServer) registerSession(session BlogSession) {
+func (srv *TelnetServer) registerSession(session *BlogSession) {
 	srv.sessionsMutex.Lock()
 	srv.last_session_id++
 	session.SetId(srv.last_session_id)
@@ -89,7 +89,7 @@ func (srv *TelnetServer) registerSession(session BlogSession) {
 	srv.sessionsMutex.Unlock()
 }
 
-func (srv *TelnetServer) unregisterSession(session BlogSession) {
+func (srv *TelnetServer) unregisterSession(session *BlogSession) {
 	srv.sessionsMutex.Lock()
 	id := session.Id()
     srv.sessions[id] = nil, false
@@ -100,7 +100,7 @@ func (srv *TelnetServer) unregisterSession(session BlogSession) {
 func (srv *TelnetServer) handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	session := NewTelnetBlogSession(srv, conn)
+	session := NewBlogSession(srv, conn)
 	go session.connReader()
 	go session.connWriter()
 	go session.inputProcessor()

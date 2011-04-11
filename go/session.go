@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"bufio"
 	"strings"
-//	"time"
 	"crypto/md5"
 )
 
@@ -22,32 +21,7 @@ const (
 	state_posting = 1
 )
 
-type BlogSession interface {
-    Server() *TelnetServer
-    Db() BlogDB
-    BlogFormatter() BlogFormatter
-    Close()
-    Disconnect()
-    Id() int
-    SetId(id int)
-    Run()
-    
-    Send(text string)
-    SendPrompt()
-    SendVersion()
-    
-    PermissionLevel() int
-    Auth(pwd string) bool
-    
-    State() int
-    SetState(state int)
-    
-    ResetInputBuffer()
-    InputBuffer() string
-    
-}
-
-type TelnetBlogSession struct {
+type BlogSession struct {
 	conn             net.Conn
 	parent_server   *TelnetServer
 
@@ -65,12 +39,9 @@ type TelnetBlogSession struct {
 	commandHandler BlogCommandHandler
 }
 
-
-//var cmd_handlers = make(map[string]CommandHandler)
-
 //////////////// session
-func NewTelnetBlogSession(server *TelnetServer, conn net.Conn) *TelnetBlogSession {
-	session := &TelnetBlogSession{}
+func NewBlogSession(server *TelnetServer, conn net.Conn) *BlogSession {
+	session := &BlogSession{}
 	session.parent_server = server
 	session.write_chan = make(chan string)
 	session.read_chan = make(chan string)
@@ -84,22 +55,22 @@ func NewTelnetBlogSession(server *TelnetServer, conn net.Conn) *TelnetBlogSessio
 }
 
 //returns the sessions parent server
-func (s *TelnetBlogSession) Server() *TelnetServer {
+func (s *BlogSession) Server() *TelnetServer {
     return s.parent_server
 }
 
 //returns the current database
-func (s *TelnetBlogSession) Db() BlogDB {
+func (s *BlogSession) Db() BlogDB {
     return s.Server().db
 }
 
 //returns the current formatter
-func (s *TelnetBlogSession) BlogFormatter() BlogFormatter {
+func (s *BlogSession) BlogFormatter() BlogFormatter {
     return s.Server().formatter
 }
 
 //closes channels [?]
-func (s *TelnetBlogSession) Close() {
+func (s *BlogSession) Close() {
     //do I have to close channels explicitely?
     
 /*	close(s.read_chan)
@@ -108,12 +79,12 @@ func (s *TelnetBlogSession) Close() {
 }
 
 //initiates disconnect
-func (s *TelnetBlogSession) Disconnect() {
+func (s *BlogSession) Disconnect() {
 	s.control_chan <- "disconnect"
 }
 
 //session mainloop
-func (session *TelnetBlogSession) Run() {
+func (session *BlogSession) Run() {
     for session.active {
 		select {
 		case status := <-session.control_chan:
@@ -126,11 +97,11 @@ func (session *TelnetBlogSession) Run() {
 }
 
 //send text
-func (s *TelnetBlogSession) Send(text string) {
+func (s *BlogSession) Send(text string) {
 	s.write_chan <- text
 }
 
-func (s *TelnetBlogSession) SendPrompt() {
+func (s *BlogSession) SendPrompt() {
 	if s.state == state_reading {
 		s.Send("#: ")
 		return
@@ -140,22 +111,22 @@ func (s *TelnetBlogSession) SendPrompt() {
 		return
 	}
 }
-func (s *TelnetBlogSession) SendVersion() {
+func (s *BlogSession) SendVersion() {
 	s.Send("fettemama.org blog system version v0.2\n\t(c) don vito 2011\n\twritten in Go\n\tuses textfiles for data storage\n\n")
 }
 
-func (s *TelnetBlogSession) Id() int {
+func (s *BlogSession) Id() int {
     return s.id
 }
-func (s *TelnetBlogSession) SetId(id int) {
+func (s *BlogSession) SetId(id int) {
     s.id = id
 }
 
-func (s *TelnetBlogSession) PermissionLevel() int {
+func (s *BlogSession) PermissionLevel() int {
     return s.permission_level
 }
 
-func (s *TelnetBlogSession) Auth(pwd string) bool {
+func (s *BlogSession) Auth(pwd string) bool {
      prev_level := s.permission_level
      hasher := md5.New()
      hasher.Write([]byte(pwd))
@@ -178,22 +149,22 @@ func (s *TelnetBlogSession) Auth(pwd string) bool {
     return true
 }
 
-func (s *TelnetBlogSession) State() int {
+func (s *BlogSession) State() int {
     return s.state
 }
-func (s *TelnetBlogSession) SetState(state int) {
+func (s *BlogSession) SetState(state int) {
     s.state = state
 }
 
-func (s *TelnetBlogSession) InputBuffer() string {
+func (s *BlogSession) InputBuffer() string {
     return s.input_buffer
 }
 
-func (s *TelnetBlogSession) ResetInputBuffer() {
+func (s *BlogSession) ResetInputBuffer() {
     s.input_buffer = ""
 }
 
-func (s *TelnetBlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
+func (s *BlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
 	if p, err = b.ReadSlice('\n'); err != nil {
 		return nil, err
 	}
@@ -206,7 +177,7 @@ func (s *TelnetBlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
 	return p[0:i], nil
 }
 
-func (session *TelnetBlogSession) connReader() {
+func (session *BlogSession) connReader() {
 	var line []byte
 	br := bufio.NewReader(session.conn)
 
@@ -221,7 +192,7 @@ func (session *TelnetBlogSession) connReader() {
 	}
 }
 
-func (session *TelnetBlogSession) connWriter() {
+func (session *BlogSession) connWriter() {
 	var err os.Error
 	for {
 		b := []byte(<-session.write_chan)
@@ -236,7 +207,7 @@ func (session *TelnetBlogSession) connWriter() {
 }
 
 
-func (session *TelnetBlogSession) inputProcessor() {
+func (session *BlogSession) inputProcessor() {
 	for {
 		user_input := <-session.read_chan
 		if !session.active {
@@ -247,7 +218,7 @@ func (session *TelnetBlogSession) inputProcessor() {
 	}
 }
 
-func (session *TelnetBlogSession) processInput(user_input string) {
+func (session *BlogSession) processInput(user_input string) {
 	session.Server().PostStatus("* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input)
 	items := strings.Split(user_input, " ", -1)
 	session.input_buffer += user_input

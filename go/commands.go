@@ -13,13 +13,13 @@ import (
 
 
 type BlogCommand struct {
-	handler        func(BlogSession, []string) string
+	handler        func(*BlogSession, []string) string
 	min_perm_level int //the permission level needed to execute this command
 }
 
 type BlogCommandHandler interface {
 	AddCommand(state int, commandString string, command BlogCommand)
-	HandleCommand(session BlogSession, commandline []string) string
+	HandleCommand(session *BlogSession, commandline []string) string
 }
 
 type CommandMap map[string]BlogCommand
@@ -44,7 +44,7 @@ func (h *TelnetCommandHandler) AddCommand(state int, commandString string, comma
 	cm[commandString] = command
 }
 
-func (h *TelnetCommandHandler) HandleCommand(session BlogSession, commandline []string) string {
+func (h *TelnetCommandHandler) HandleCommand(session *BlogSession, commandline []string) string {
 	state := session.State()
 	cmdmap := h.commandsByState[state]
 
@@ -71,13 +71,13 @@ func (h *TelnetCommandHandler) HandleCommand(session BlogSession, commandline []
 
 func (h *TelnetCommandHandler) setupCMDHandlers() {
 
-	f := func(session BlogSession, items []string) string {
+	f := func(session *BlogSession, items []string) string {
 		session.Disconnect()
 		return "ok\n"
 	}
 	h.AddCommand(state_reading, "quit", BlogCommand{f, 0})
 
-	f = func(session BlogSession, items []string) string {
+	f = func(session *BlogSession, items []string) string {
 		session.Disconnect()
 		session.Server().Shutdown()
 		return "ok\n"
@@ -103,7 +103,7 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 }
 
 
-func tch_handleRead(session BlogSession, items []string) string {
+func tch_handleRead(session *BlogSession, items []string) string {
 	if len(items) != 2 {
 		return "syntax: read <post_id>\n"
 	}
@@ -118,7 +118,7 @@ func tch_handleRead(session BlogSession, items []string) string {
 	return session.BlogFormatter().FormatPost(&post, true)
 }
 
-func tch_handleAuth(session BlogSession, items []string) string {
+func tch_handleAuth(session *BlogSession, items []string) string {
 	if len(items) != 2 {
 		return "syntax: auth <password>\n"
 	}
@@ -131,7 +131,7 @@ func tch_handleAuth(session BlogSession, items []string) string {
 	return fmt.Sprintf("permission level %d granted\n", session.PermissionLevel())
 }
 
-func tch_handlePost(session BlogSession, items []string) string {
+func tch_handlePost(session *BlogSession, items []string) string {
 	if len(items) != 1 {
 		return "syntax: post\n"
 	}
@@ -140,7 +140,7 @@ func tch_handlePost(session BlogSession, items []string) string {
 	return "enter post. enter $end to end input and save post.\n01234567890123456789012345678901234567890123456789012345678901234567890123456789\n"
 }
 
-func tch_handleComment(session BlogSession, items []string) string {
+func tch_handleComment(session *BlogSession, items []string) string {
 	if len(items) < 3 {
 		return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
 	}
@@ -165,7 +165,7 @@ func tch_handleComment(session BlogSession, items []string) string {
 	return s
 }
 
-func tch_handleBroadcast(session BlogSession, items []string) string {
+func tch_handleBroadcast(session *BlogSession, items []string) string {
 	if len(items) < 2 {
 		return "syntax: broadcast <your broadcast>\n"
 	}
@@ -178,7 +178,7 @@ func tch_handleBroadcast(session BlogSession, items []string) string {
 }
 
 
-func tch_handlePostingEnd(session BlogSession, items []string) string {
+func tch_handlePostingEnd(session *BlogSession, items []string) string {
 	session.SetState(state_reading)
 
 	post := BlogPost{
@@ -196,7 +196,7 @@ func tch_handlePostingEnd(session BlogSession, items []string) string {
 	return s
 }
 
-func tch_handleNews(session BlogSession, items []string) string {
+func tch_handleNews(session *BlogSession, items []string) string {
 	if len(items) < 1 || len(items) > 2 {
 		return "syntax: news [max_number_of_posts]\n"
 	}
@@ -221,7 +221,7 @@ func tch_handleNews(session BlogSession, items []string) string {
 	return s
 }
 
-func tch_handleToday(session BlogSession, items []string) string {
+func tch_handleToday(session *BlogSession, items []string) string {
 	if len(items) != 1 {
 		return "syntax: today\n"
 	}
@@ -254,12 +254,12 @@ func tch_handleToday(session BlogSession, items []string) string {
 	return s
 }
 
-func tch_handleNullspace(session BlogSession, items []string) string {
+func tch_handleNullspace(session *BlogSession, items []string) string {
     return ""
 }
 
 
-func tch_handleHelp(session BlogSession, items []string) string {
+func tch_handleHelp(session *BlogSession, items []string) string {
 
 	s := "fettemama help\n"
 	s += "help\n\t* this screen\n"
