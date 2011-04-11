@@ -63,7 +63,7 @@ func (md *MongoDB) StorePost(post *BlogPost) (id int64, err os.Error) {
 	return
 }
 
-func (md *MongoDB) getPostsForQuery(qryobj interface{}) (posts []BlogPost, err os.Error) {
+func (md *MongoDB) getPostsForQuery(qryobj interface{}, skip, limit int32) (posts []BlogPost, err os.Error) {
 	md.postmu.Lock()
 	defer md.postmu.Unlock()
 
@@ -80,7 +80,8 @@ func (md *MongoDB) getPostsForQuery(qryobj interface{}) (posts []BlogPost, err o
 	// }
 
 	var docs *mongo.Cursor
-	docs, err = md.posts.FindAll(query)
+	//docs, err = md.posts.FindAll(query)
+	docs, err = md.posts.Query(query, skip, limit)
 	if err != nil {
 		return
 	}
@@ -117,7 +118,7 @@ func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	// }
 
 	var posts []BlogPost
-	posts, err = md.getPostsForQuery(m)
+	posts, err = md.getPostsForQuery(m,0,1)
 	if err != nil || len(posts) == 0 {
 		err = os.NewError("Post not found.")
 		return
@@ -137,7 +138,7 @@ func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (po
 		"$orderby": q{"timestamp": -1},
 	}
 
-	posts, err = md.getPostsForQuery(m)
+	posts, err = md.getPostsForQuery(m,0,0)
 	if err != nil || len(posts) == 0 {
 		err = os.NewError("Posts not found.")
 		return
@@ -146,15 +147,15 @@ func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (po
 	return
 }
 
-func (md *MongoDB) GetLastNPosts(num_to_get int) (posts []BlogPost, err os.Error) {
+func (md *MongoDB) GetLastNPosts(num_to_get int32) (posts []BlogPost, err os.Error) {
 	type q map[string]interface{}
 	m := q{
-	//	"$query":   q{"timestamp": q{"$gte": start_timestamp, "$lt": end_timestamp}},
+		"$query":   q{},
 		"$orderby": q{"timestamp": -1},
 	}
 
 	//var posts []BlogPost
-	posts, err = md.getPostsForQuery(m)
+	posts, err = md.getPostsForQuery(m,0,num_to_get)
 	if err != nil || len(posts) == 0 {
 		err = os.NewError("Posts not found.")
 		return

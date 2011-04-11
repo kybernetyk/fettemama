@@ -13,13 +13,13 @@ import (
 
 
 type BlogCommand struct {
-	handler        func(BlogSession, []string) string
+	handler        func(*BlogSession, []string) string
 	min_perm_level int //the permission level needed to execute this command
 }
 
 type BlogCommandHandler interface {
 	AddCommand(state int, commandString string, command BlogCommand)
-	HandleCommand(session BlogSession, commandline []string) string
+	HandleCommand(session *BlogSession, commandline []string) string
 }
 
 type CommandMap map[string]BlogCommand
@@ -44,19 +44,19 @@ func (h *TelnetCommandHandler) AddCommand(state int, commandString string, comma
 	cm[commandString] = command
 }
 
-func (h *TelnetCommandHandler) HandleCommand(session BlogSession, commandline []string) string {
+func (h *TelnetCommandHandler) HandleCommand(session *BlogSession, commandline []string) string {
 	state := session.State()
 	cmdmap := h.commandsByState[state]
 
 	//handle normal reading mode
 	k, ok := cmdmap[commandline[0]]
 	if !ok {
-        //if user is posting we don't want to send error messages for his input
-        if session.State() != state_posting {
-            return "error: command not implemented\n"    
-        } else {
-            return ""
-        }
+		//if user is posting we don't want to send error messages for his input
+		if session.State() != state_posting {
+			return "error: command not implemented\n"
+		} else {
+			return ""
+		}
 	}
 	if session.PermissionLevel() >= k.min_perm_level {
 		handler := k.handler
@@ -71,13 +71,13 @@ func (h *TelnetCommandHandler) HandleCommand(session BlogSession, commandline []
 
 func (h *TelnetCommandHandler) setupCMDHandlers() {
 
-	f := func(session BlogSession, items []string) string {
+	f := func(session *BlogSession, items []string) string {
 		session.Disconnect()
 		return "ok\n"
 	}
 	h.AddCommand(state_reading, "quit", BlogCommand{f, 0})
 
-	f = func(session BlogSession, items []string) string {
+	f = func(session *BlogSession, items []string) string {
 		session.Disconnect()
 		session.Server().Shutdown()
 		return "ok\n"
@@ -90,25 +90,27 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 			min_perm_level: 0,
 		})
 
+    h.AddCommand(state_reading, "", BlogCommand{tch_handleNullspace, 0})
 	h.AddCommand(state_reading, "read", BlogCommand{tch_handleRead, 0})
 	h.AddCommand(state_reading, "news", BlogCommand{tch_handleNews, 0})
+	h.AddCommand(state_reading, "today", BlogCommand{tch_handleToday, 0})
 	h.AddCommand(state_reading, "post", BlogCommand{tch_handlePost, 5})
 	h.AddCommand(state_reading, "comment", BlogCommand{tch_handleComment, 0})
 	h.AddCommand(state_reading, "broadcast", BlogCommand{tch_handleBroadcast, 0})
 	h.AddCommand(state_reading, "help", BlogCommand{tch_handleHelp, 0})
 	h.AddCommand(state_posting, "$end", BlogCommand{tch_handlePostingEnd, 0})
-	
+
 }
 
 
-func tch_handleRead(session BlogSession, items []string) string {
+func tch_handleRead(session *BlogSession, items []string) string {
 	if len(items) != 2 {
 		return "syntax: read <post_id>\n"
 	}
 	id, _ := strconv.Atoi64(items[1])
 	post, err := session.Db().GetPost(id)
 	if err != nil {
-		return "error: " + err.String() + "\n"
+		return err.String()+"\n"
 	}
 
 	post.Comments, _ = session.Db().GetComments(post.Id)
@@ -116,7 +118,7 @@ func tch_handleRead(session BlogSession, items []string) string {
 	return session.BlogFormatter().FormatPost(&post, true)
 }
 
-func tch_handleAuth(session BlogSession, items []string) string {
+func tch_handleAuth(session *BlogSession, items []string) string {
 	if len(items) != 2 {
 		return "syntax: auth <password>\n"
 	}
@@ -129,7 +131,7 @@ func tch_handleAuth(session BlogSession, items []string) string {
 	return fmt.Sprintf("permission level %d granted\n", session.PermissionLevel())
 }
 
-func tch_handlePost(session BlogSession, items []string) string {
+func tch_handlePost(session *BlogSession, items []string) string {
 	if len(items) != 1 {
 		return "syntax: post\n"
 	}
@@ -138,32 +140,32 @@ func tch_handlePost(session BlogSession, items []string) string {
 	return "enter post. enter $end to end input and save post.\n01234567890123456789012345678901234567890123456789012345678901234567890123456789\n"
 }
 
-func tch_handleComment(session BlogSession, items []string) string {
+func tch_handleComment(session *BlogSession, items []string) string {
 	if len(items) < 3 {
 		return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
 	}
 
-    post_id, _ := strconv.Atoi64(items[1])
-    nick := items[2]
-    content := strings.Join(items[3:], " ")
-    
-    comment := PostComment{
-     Content:   content,
-     Author:    nick,
-     Timestamp: time.Seconds(),
-     PostId: post_id,
-    }
+	post_id, _ := strconv.Atoi64(items[1])
+	nick := items[2]
+	content := strings.Join(items[3:], " ")
 
-    i, err := session.Db().StoreComment(&comment)
-    if err != nil {
-     return "error: " + err.String() + "\n"
-    }
-    
-    s := fmt.Sprintf("commented post %d. your comment's id: %d\n",post_id, i)
-    return s
+	comment := PostComment{
+		Content:   content,
+		Author:    nick,
+		Timestamp: time.Seconds(),
+		PostId:    post_id,
+	}
+
+	i, err := session.Db().StoreComment(&comment)
+	if err != nil {
+		return "error: " + err.String() + "\n"
+	}
+
+	s := fmt.Sprintf("commented post %d. your comment's id: %d\n", post_id, i)
+	return s
 }
 
-func tch_handleBroadcast(session BlogSession, items []string) string {
+func tch_handleBroadcast(session *BlogSession, items []string) string {
 	if len(items) < 2 {
 		return "syntax: broadcast <your broadcast>\n"
 	}
@@ -176,33 +178,37 @@ func tch_handleBroadcast(session BlogSession, items []string) string {
 }
 
 
-func tch_handlePostingEnd(session BlogSession, items []string) string {
+func tch_handlePostingEnd(session *BlogSession, items []string) string {
 	session.SetState(state_reading)
 
 	post := BlogPost{
-		Content:   strings.Trim(session.InputBuffer(), "\n\r"),
+		Content:   strings.Trim(strings.Replace(session.InputBuffer(), "$end", "", -1), "\n\r"),
 		Timestamp: time.Seconds(),
-		Id:        0,   //0 = create new post
+		Id:        0, //0 = create new post
 	}
 
 	id, err := session.Db().StorePost(&post)
 	if err != nil {
-	 return "error: " + err.String() + "\n"
+		return "error: " + err.String() + "\n"
 	}
 
 	s := fmt.Sprintf("saved post with id %d\n", id)
 	return s
 }
 
-func tch_handleNews(session BlogSession, items []string) string {
+func tch_handleNews(session *BlogSession, items []string) string {
+	if len(items) < 1 || len(items) > 2 {
+		return "syntax: news [max_number_of_posts]\n"
+	}
+
 	num := 5
 	if len(items) == 2 {
 		num, _ = strconv.Atoi(items[1])
 	}
-	
-	posts, err := session.Db().GetLastNPosts(num)
+
+	posts, err := session.Db().GetLastNPosts(int32(num))
 	if err != nil {
-		return "error: " + err.String() + "\n"
+		return err.String()+"\n"
 	}
 
 	//post.Comments, _ = session.Db().GetComments(post.Id)
@@ -215,16 +221,55 @@ func tch_handleNews(session BlogSession, items []string) string {
 	return s
 }
 
-func tch_handleHelp(session BlogSession, items []string) string {
+func tch_handleToday(session *BlogSession, items []string) string {
+	if len(items) != 1 {
+		return "syntax: today\n"
+	}
 	
-	s := "fettemama help\n";
+	today_t := time.LocalTime()
+	today_t.Hour = 0
+	today_t.Minute = 0
+	today_t.Second = 0
+
+	today := today_t.Seconds()
+    tomorrow := today + (24 * 60 * 60)
+
+//GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error)
+
+    fmt.Printf("today: %d | tomorro: %d\n", today, tomorrow)
+
+	posts, err := session.Db().GetPostsForTimespan(today, tomorrow)
+	if err != nil {
+		return err.String()+"\n"
+	}
+
+	//post.Comments, _ = session.Db().GetComments(post.Id)
+	s := ""
+	for _, post := range posts {
+		s += session.BlogFormatter().FormatPost(&post, false)
+		s += "\n"
+	}
+
+
+	return s
+}
+
+func tch_handleNullspace(session *BlogSession, items []string) string {
+    return ""
+}
+
+
+func tch_handleHelp(session *BlogSession, items []string) string {
+
+	s := "fettemama help\n"
 	s += "help\n\t* this screen\n"
 	s += "comment <post_id> <your_nick> ...\n\t* add comment to a post\n"
 	s += "post\n\t* create new blog post\n"
 	s += "auth <password>\n\t* change user level\n"
 	s += "read <post_id>\n\t* read a post\n"
 	s += "news [num of posts]\n\t* shows the last num posts\n"
-	
+	s += "today\n\t* shows today's posts\n"
+
 	s += "\n"
 	return s
 }
