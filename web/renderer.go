@@ -28,6 +28,7 @@ func RenderHeader() string {
     	<body>
     		<h1><a href="/">Fefemama</a></h1>
     		<b>I love the smell of nopslides in the morning ...</b><br>
+				<p align=right>Fragen? <a href="/faq.html">Antworten!</a></p>
     	 `
 }
 
