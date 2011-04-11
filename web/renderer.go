@@ -79,6 +79,7 @@ func RenderPosts(posts *[]BlogPost) string {
 		}
 
 		s += RenderPost(&p, false)
+		s += "<br>"
 	}
 	s += "</ul>"
 

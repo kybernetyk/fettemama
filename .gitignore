@@ -2,3 +2,10 @@
 *.bak
 *.pyc
 *.tmproj
+*.6g
+*.o
+*.6
+*.8
+*.8g
+main
+blog
