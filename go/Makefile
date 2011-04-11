@@ -4,6 +4,7 @@ TARG=blog
 GOFILES=\
 	db.go\
 	mongo_db.go\
+	post.go\
 	blog.go\
 	commands.go\
 	session.go\
