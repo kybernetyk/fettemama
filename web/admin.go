@@ -6,6 +6,8 @@ import (
 	"crypto/md5"
 	"os"
 	"time"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -43,8 +45,7 @@ var adminpage = `
     <body>
     <h3>GIEF POST:</h3>
     <form action="/admin" method="POST">
-    <textarea rows="8" cols="80" id="content" name="content" value="">
-    </textarea>
+    <textarea rows="8" cols="80" id="content" name="content"></textarea>
     <br>
     <input id="what" type="hidden" value="post" name="what">
     <br>
@@ -52,8 +53,23 @@ var adminpage = `
     </form>
     </body>
     </html>
-    
 `
+
+var editpage = `
+<html>
+    <head><title>Project: Spanferkel</title></head>
+    <body>
+    <h3>EDIT POST:</h3>
+    <form action="/admin/edit" method="POST">
+    <textarea rows="8" cols="80" id="content" name="content">$postcontent$</textarea>
+    <input id="postid" type="hidden" value="$postid$" name="postid">
+    <br>
+    <input type="submit" name="Submit" value="Submit"/>
+    </form>
+    </body>
+    </html>
+`
+
 
 var successpage = `<b>Post has been posted!</b><br><br><A href="/">Index</a>`
 
@@ -72,16 +88,8 @@ func godHash(str string) string {
 	return fmt.Sprintf("%x", hasher.Sum())
 }
 
-func adminGet(ctx *web.Context) string {
-	if !checkGodLevel(ctx) {
-		return loginpage
-	}
-
-    return adminpage
-}
-
 func createNewPost(content string) os.Error {
-    post := BlogPost{
+	post := BlogPost{
 		Content:   content,
 		Timestamp: time.Seconds(),
 		Id:        0, //0 = create new post
@@ -92,7 +100,15 @@ func createNewPost(content string) os.Error {
 		return err
 	}
 
-    return nil
+	return nil
+}
+
+func adminGet(ctx *web.Context) string {
+	if !checkGodLevel(ctx) {
+		return loginpage
+	}
+
+	return adminpage
 }
 
 func adminPost(ctx *web.Context) {
@@ -107,23 +123,61 @@ func adminPost(ctx *web.Context) {
 			return
 		}
 		ctx.SetSecureCookie("godlevel", "fefe", 3600)
-        ctx.Redirect(301, "/")
-        return
+		ctx.Redirect(301, "/")
+		return
+	}
+
+	if !checkGodLevel(ctx) {
+		ctx.SetSecureCookie("godlevel", "fefe", 3600)
+		ctx.Redirect(301, "/")
+		return
 	}
 
 	if ctx.Params["what"] == "post" {
 		err := createNewPost(ctx.Params["content"])
 		if err != nil {
-		    ctx.WriteString("couldn't post: " + err.String())
-		    ctx.WriteString("<br><br><A href='/'>Index</a>")
-		    return
+			ctx.WriteString("couldn't post: " + err.String())
+			ctx.WriteString("<br><br><A href='/'>Index</a>")
+			return
 		}
 		ctx.WriteString(successpage)
 		return
 	}
+}
 
+
+func editGet(ctx *web.Context) string {
+	if !checkGodLevel(ctx) {
+		return loginpage
+	}
+	id, _ := strconv.Atoi64(ctx.Params["id"])
+	post, err := Db.GetPost(id)
+	if err != nil {
+		return "couldn't load post with given id!"
+	}
+	s := strings.Replace(editpage, "$postcontent$", post.Content, -1)
+	s = strings.Replace(s, "$postid$", ctx.Params["id"], -1)
+	return s
+}
+
+func editPost(ctx *web.Context) {
 	if !checkGodLevel(ctx) {
 		ctx.Redirect(301, "/")
 		return
 	}
+
+	id, _ := strconv.Atoi64(ctx.Params["postid"])
+	post, err := Db.GetPost(id)
+	if err != nil {
+		ctx.WriteString("couldn't load post with given id!")
+		return
+	}
+	post.Content = ctx.Params["content"]
+	_, err = Db.StorePost(&post)
+	if err != nil {
+		ctx.WriteString("couldn't store post!")
+		return
+	}
+
+	ctx.WriteString(successpage)
 }

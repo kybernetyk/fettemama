@@ -50,16 +50,30 @@ func (md *MongoDB) StorePost(post *BlogPost) (id int64, err os.Error) {
 	md.postmu.Lock()
 	defer md.postmu.Unlock()
 
-	qry, _ := mongo.Marshal(map[string]string{})
-	count, _ := md.posts.Count(qry)
-	count++
+	//create new post
+	if post.Id == 0 {
+		qry, _ := mongo.Marshal(map[string]string{})
+		count, _ := md.posts.Count(qry)
+		count++
 
-	id = count
-	post.Id = count
-	doc, _ := mongo.Marshal(*post)
-	fmt.Println(doc)
+		id = count
+		post.Id = count
+		doc, _ := mongo.Marshal(*post)
+		err = md.posts.Insert(doc)
+		return
+	} else { //update post
+		type q map[string]interface{}
+		m := q{"id": post.Id}
 
-	md.posts.Insert(doc)
+		var query mongo.BSON
+		query, err = mongo.Marshal(m)
+		if err != nil {
+			return
+		}
+        
+        doc, _ := mongo.Marshal(*post)
+		err = md.posts.Update(query, doc)
+	}
 
 	return
 }
@@ -109,7 +123,6 @@ func (md *MongoDB) getPostsForQuery(qryobj interface{}, skip, limit int32) (post
 
 func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	type q map[string]interface{}
-
 	m := q{"id": post_id}
 
 	//find sort example
@@ -119,7 +132,7 @@ func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	// }
 
 	var posts []BlogPost
-	posts, err = md.getPostsForQuery(m,0,1)
+	posts, err = md.getPostsForQuery(m, 0, 1)
 	if err != nil || len(posts) == 0 {
 		err = os.NewError("Post not found.")
 		return
@@ -136,9 +149,9 @@ func (md *MongoDB) GetPostsForDate(date time.Time) (posts []BlogPost, err os.Err
 	date.Second = 0
 
 	start := date.Seconds()
-    end := start + (24 * 60 * 60)
+	end := start + (24 * 60 * 60)
 
-    return md.GetPostsForTimespan(start, end)
+	return md.GetPostsForTimespan(start, end)
 }
 
 //returns posts for a certain month
@@ -147,18 +160,18 @@ func (md *MongoDB) GetPostsForMonth(date time.Time) (posts []BlogPost, err os.Er
 	date.Minute = 0
 	date.Second = 0
 	date.Day = 1
-	
+
 	next_month := date
-	next_month.Month ++
+	next_month.Month++
 	if next_month.Month > 12 {
-	    next_month.Month = 1
-	    next_month.Year ++
+		next_month.Month = 1
+		next_month.Year++
 	}
 
 	start := date.Seconds()
-    end := next_month.Seconds()
+	end := next_month.Seconds()
 
-    return md.GetPostsForTimespan(start, end)
+	return md.GetPostsForTimespan(start, end)
 }
 
 
@@ -172,7 +185,7 @@ func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (po
 		"$orderby": q{"timestamp": -1},
 	}
 
-	posts, err = md.getPostsForQuery(m,0,0)
+	posts, err = md.getPostsForQuery(m, 0, 0)
 	if err != nil || len(posts) == 0 {
 		err = os.NewError("Posts not found.")
 		return
@@ -189,7 +202,7 @@ func (md *MongoDB) GetLastNPosts(num_to_get int32) (posts []BlogPost, err os.Err
 	}
 
 	//var posts []BlogPost
-	posts, err = md.getPostsForQuery(m,0,num_to_get)
+	posts, err = md.getPostsForQuery(m, 0, num_to_get)
 	if err != nil || len(posts) == 0 {
 		err = os.NewError("Posts not found.")
 		return

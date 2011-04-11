@@ -44,7 +44,7 @@ func RenderPost(post *BlogPost, withComments bool) string {
     post.Comments, _ = Db.GetComments(post.Id)
     
 	s := "<li>"
-	s += fmt.Sprintf("<a href='/post?id=%d'>[%d]</a> ",post.Id, len(post.Comments))
+	s += fmt.Sprintf("<a href='/post?id=%d'>[%d]</a> ", post.Id, len(post.Comments))
 	s += strings.Replace(post.Content, "\n", "<br>", -1)
 
 	if withComments {
