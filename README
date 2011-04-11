@@ -1,23 +1,31 @@
-mongodb powered blogging system in python. no http frontend - only telnet :P
+mongodb powered blogging system in python and go. 
+
+no http frontend - only telnet :P
+
 (c) Leon Szpilewski
 Licensed under GPL v3
 
-server.py - simple sockets server
-client_thread.py - thread handler, each connection gets one thread
-blog.py - the blog itself. processes input, 'renders' blog
+the python version can be found in python/
+the go version in go/
+
+this project was written to compare go and python (and mainly to learn python)
+
 
 setup:
 get mongodb running
 get pymongo
+get gomongo
+
 create a db named 'blog'
 create a collection 'admin' in db
 add 'admin_pass' : 'yourpass' to the admin collection
-
-how to post:
-connect to port 1337 and enter the command 'post <yourpass>'. post away.
+(only python version uses this - for go see session.go)
 
 how to anything:
 the command 'help' is there for you
 
-dependencies: mongodb, pymongo, python 2.6
+the python and go versions differ slightly. python works with passwords where the go version uses user levels.
+
+dependencies: mongodb, pymongo, python 2.6, go (works with march 11 release), gomongo
+
 
