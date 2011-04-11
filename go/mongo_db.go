@@ -147,6 +147,7 @@ func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (po
 }
 
 func (md *MongoDB) GetLastNPosts(num_to_get int) (posts []BlogPost, err os.Error) {
+	type q map[string]interface{}
 	m := q{
 	//	"$query":   q{"timestamp": q{"$gte": start_timestamp, "$lt": end_timestamp}},
 		"$orderby": q{"timestamp": -1},
