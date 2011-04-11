@@ -1,7 +1,79 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<head>
 <title>Fefemama Blog FAQ</title>
+<style type="text/css" media="screen">
+	.content 
+	{
+		margin-top: 1.0em;
+		background-color: #EDF1F3;
+		font-family: "Helvetica,Arial,FreeSans";
+		color: #000000;
+		width: 600px;
+		margin-left: auto ;
+		margin-right: auto ;
+		padding-bottom: 1em;
+	}
+	
+	.codebox
+	{
+		width: 80%;
+		background-color: #000000;
+		color: #00ff00;
+		margin-left: auto ;
+		margin-right: auto ;
+		padding-left: 0.1em;
+		border: 1px solid #009900;
+					font-family: "Courier";
+	}
+	
+	.content .header
+	{
+		text-align: center;
+		font-size: 2.0em;
+	}
+	
+	.content p
+	{
+		margin-left: 1.0em;
+	}
+	 
+	/* ribbon css taken from: http://unindented.org/articles/2009/10/github-ribbon-using-css-transforms/ */
+	.ribbon 
+	{
+    background-color: #a00;
+    overflow: hidden;
+    /* top left corner */
+    position: absolute;
+    left: -3.5em;
+    top: 3.0em;
+    /* 45 deg ccw rotation */
+    -moz-transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    /* shadow */
+    -moz-box-shadow: 0 0 1em #888;
+    -webkit-box-shadow: 0 0 1em #888;
+ }
+.ribbon a 
+	{
+    border: 1px solid #faa;
+    color: #fff;
+    display: block;
+    font: bold 81.25% 'Helvetiva Neue', Helvetica, Arial, sans-serif;
+    margin: 0.05em 0 0.075em 0;
+    padding: 0.5em 3.5em;
+    text-align: center;
+    text-decoration: none;
+    /* shadow */
+    text-shadow: 0 0 0.5em #444;
+  }
+</style>
+</head>
+<body>
+	<div class="ribbon">
+    <a href="http://github.com/jsz/fettemama">Gabel mich auf GitHub</a>
+  </div>
+ <div class="content"> 
 <h2>Fefemama Blog FAQ</h2>
 (Ich habe mal einfach Fefes FAQ genommen und angepasst, wo noetig.)
 
@@ -62,6 +134,9 @@ machen.
 es denn dann gemacht?</h3>
 
 Ich habe eine Blogsoftware in Go gehackt, mit web.go und einer MongoDB als Backend. Vorher war das alles C99 mit plain text files - hatte mich dann aber doch genervt, so dass ich es in Go reimplementiert hab. Go ist nice, MongoDb ist naja - ich vermsise ne gescheite Query language.
+<p>
+	Die Blog Software gibts unter der GPL lizenz auf github.com zu klicken. Einfach den Ribbon oben links anklicken.
+</p>
 
 <h3>Das Blog deprimiert mich, das ist ja alles furchtbar</h3>
 
