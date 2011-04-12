@@ -7,9 +7,7 @@ import (
 	"web"
 )
 
-var rss_head = `
-<html>
-<?xml version="1.0" encoding="UTF-8"?>
+var rss_head = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 
 <channel>
@@ -71,8 +69,7 @@ func renderRSSFooter() string {
 }
 
 func RenderRSS(posts *[]BlogPost) string {
-	s := ""
-	s += renderRSSHeader()
+	s := renderRSSHeader()
 	for _, p := range *posts {
 		s += renderRSSItem(&p)
 	}
