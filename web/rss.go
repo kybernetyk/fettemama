@@ -20,15 +20,14 @@ var rss_item = `
 <item>
 <description><![CDATA[
 $descriptioncontent$
-]]></description>
+]]>
+</description>
 <title><![CDATA[
-$titlecontent$...]]></title>
-<link>
-$linkcontent$</link>
-<guid>
-$guidcontent$</guid>
-<pubDate>
-$datecontent$</pubDate>
+$titlecontent$...]]>
+</title>
+<link>$linkcontent$</link>
+<guid>$guidcontent$</guid>
+<pubDate>$datecontent$</pubDate>
 </item>
 `
 var rss_footer =`
@@ -56,7 +55,7 @@ func renderRSSItem(post *BlogPost) string {
 	s = strings.Replace(s, "$guidcontent$", link, -1)
 	
 	post_date := time.SecondsToLocalTime(post.Timestamp)
-	date := post_date.Format("Mon, 02 Jan 06 15:04:05 -0700")
+	date := post_date.Format("Mon, 02 Jan 2006 15:04:05 -0700")
 	s = strings.Replace(s, "$datecontent$", date, -1)
 	
 	return s
