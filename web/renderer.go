@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
-	//"strings"
+	"html"
 )
 
 func RenderHeader() string {
@@ -53,7 +53,7 @@ func RenderPost(post *BlogPost, withComments bool) string {
 	if withComments {
 		s += "Comments:<ul>"
 		for _, comment := range post.Comments {
-			s += fmt.Sprintf("<li>[%s] %s</li>", comment.Author, comment.Content)
+			s += fmt.Sprintf("<li>[%s] %s</li>", html.EscapeString(comment.Author), html.EscapeString(comment.Content))
 		}
 		s += "</ul>"
 		s += "<p><a href='/comment.html'>Willst du einen Kommentar hinterlassen?</a></p>"
