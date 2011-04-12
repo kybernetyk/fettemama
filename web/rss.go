@@ -56,7 +56,7 @@ func renderRSSItem(post *BlogPost) string {
 	s = strings.Replace(s, "$guidcontent$", link, -1)
 	
 	post_date := time.SecondsToLocalTime(post.Timestamp)
-	date := post_date.Format(time.RFC822Z)
+	date := post_date.Format("Mon, 02 Jan 06 15:04:05 -0700")
 	s = strings.Replace(s, "$datecontent$", date, -1)
 	
 	return s
