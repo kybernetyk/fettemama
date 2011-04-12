@@ -10,7 +10,7 @@ func RenderHeader() string {
 	return `<html>
     	<head>
     		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    		<link rel="alternate" type="application/rss+xml" title="RSS FEED AFFE" href="/rss.xml">
+    		<link rel="alternate" type="application/rss+xml" title="RSS FEED AFFE" href="http://fettemama.org/rss.xml">
     		<title>fefemama.org - THE BEST BLOG IN THE UNIVERSE WRITTEN IN Go :]</title>
 
     	<script type="text/javascript">
