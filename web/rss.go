@@ -53,12 +53,10 @@ func renderRSSItem(post *BlogPost) string {
 
 	link := fmt.Sprintf("http://fettemama.org/post?id=%d", post.Id)
 	s = strings.Replace(s, "$linkcontent$", link, -1)
-
-	guid := fmt.Sprintf("fm.post.id.%d", post.Id)
-	s = strings.Replace(s, "$guidcontent$", guid, -1)
+	s = strings.Replace(s, "$guidcontent$", link, -1)
 	
 	post_date := time.SecondsToLocalTime(post.Timestamp)
-	date := post_date.Format(time.RFC822Z)
+	date := post_date.Format(time.RFC822)
 	s = strings.Replace(s, "$datecontent$", date, -1)
 	
 	return s
