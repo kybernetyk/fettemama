@@ -48,17 +48,17 @@ func RenderPost(post *BlogPost, withComments bool) string {
 	s += fmt.Sprintf("<a href='/post?id=%d'>[%d]</a> ", post.Id, len(post.Comments))
 	//s += strings.Replace(post.Content, "\n", "<br>", -1)
 	s += post.Content
+	s += "</li>"
 
 	if withComments {
-		s += "<br>Comments:<ul>"
+		s += "<p>Comments:<ul>"
 		for _, comment := range post.Comments {
 			s += fmt.Sprintf("<li>[%s] %s</li>", comment.Author, comment.Content)
 		}
-		s += "</ul>"
+		s += "</ul></p>"
 		s += "<p><a href='/comment.html'>Willst du einen Kommentar hinterlassen?</a></p>"
 	}
-	
-	s += "</li>"
+
 	return s
 }
 

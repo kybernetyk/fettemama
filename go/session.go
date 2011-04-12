@@ -112,7 +112,7 @@ func (s *BlogSession) SendPrompt() {
 	}
 }
 func (s *BlogSession) SendVersion() {
-	s.Send("fettemama.org blog system version v0.2\n\t(c) don vito 2011\n\twritten in Go\n\tuses textfiles for data storage\n\n")
+	s.Send("fettemama.org blog system version v0.2\n\t(c) don vito 2011\n\twritten in Go\n\n")
 }
 
 func (s *BlogSession) Id() int {
