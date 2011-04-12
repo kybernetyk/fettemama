@@ -82,7 +82,7 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 		session.Server().Shutdown()
 		return "ok\n"
 	}
-	h.AddCommand(state_reading, "die", BlogCommand{f, 10})
+	h.AddCommand(state_reading, "die", BlogCommand{f, 12})
 
 	h.AddCommand(state_reading, "auth",
 		BlogCommand{
@@ -90,11 +90,11 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 			min_perm_level: 0,
 		})
 
-    h.AddCommand(state_reading, "", BlogCommand{tch_handleNullspace, 0})
+  h.AddCommand(state_reading, "", BlogCommand{tch_handleNullspace, 0})
 	h.AddCommand(state_reading, "read", BlogCommand{tch_handleRead, 0})
 	h.AddCommand(state_reading, "news", BlogCommand{tch_handleNews, 0})
 	h.AddCommand(state_reading, "today", BlogCommand{tch_handleToday, 0})
-	h.AddCommand(state_reading, "post", BlogCommand{tch_handlePost, 5})
+	h.AddCommand(state_reading, "post", BlogCommand{tch_handlePost, 12})
 	h.AddCommand(state_reading, "comment", BlogCommand{tch_handleComment, 0})
 	h.AddCommand(state_reading, "broadcast", BlogCommand{tch_handleBroadcast, 0})
 	h.AddCommand(state_reading, "help", BlogCommand{tch_handleHelp, 0})
