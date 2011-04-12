@@ -45,8 +45,8 @@ func renderRSSItem(post *BlogPost) string {
 	s = strings.Replace(s, "$descriptioncontent$", post.Content, -1)
 	
 	l := len(post.Content)
-	if (l > 32) {
-		l = 32
+	if (l > 64) {
+		l = 64
 	}
 
 	s = strings.Replace(s, "$titlecontent$", post.Content[0:l], -1)
