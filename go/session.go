@@ -219,7 +219,10 @@ func (session *BlogSession) inputProcessor() {
 }
 
 func (session *BlogSession) processInput(user_input string) {
-	session.Server().PostStatus("* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input)
+	if len( user_input ) > 1 {
+		session.Server().PostStatus("* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input)
+	}
+	
 	items := strings.Split(user_input, " ", -1)
 	session.input_buffer += user_input
 	session.input_buffer += "\n"
