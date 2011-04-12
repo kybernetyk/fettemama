@@ -75,7 +75,7 @@ var successpage = `<b>Post has been posted!</b><br><br><A href="/">Index</a>`
 
 func checkGodLevel(ctx *web.Context) bool {
 	godlevel, _ := ctx.GetSecureCookie("godlevel")
-	//    godlevel := godHash(level)
+	godlevel = godHash(godlevel)
 	if godlevel == admin_pass {
 		return true
 	}
@@ -113,12 +113,11 @@ func adminGet(ctx *web.Context) string {
 
 func adminPost(ctx *web.Context) {
 	level := ctx.Params["godlevel"]
-	fmt.Println(ctx.Params["what"])
 	godlevel := godHash(level)
 
 	if ctx.Params["what"] == "login" {
 		if godlevel == admin_pass {
-			ctx.SetSecureCookie("godlevel", godlevel, 3600)
+			ctx.SetSecureCookie("godlevel", level, 3600)
 			ctx.Redirect(301, "/admin")
 			return
 		}
