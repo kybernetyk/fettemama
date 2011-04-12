@@ -8,6 +8,7 @@ GOFILES=\
 	renderer.go\
 	index.go\
 	admin.go\
+	rss.go\
 	main.go
 
 include $(GOROOT)/src/Make.cmd
