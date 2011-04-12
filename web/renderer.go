@@ -50,7 +50,7 @@ func RenderPost(post *BlogPost, withComments bool) string {
 	s += post.Content
 
 	if withComments {
-		s += "<br><br>Comments:<ul>"
+		s += "<br>Comments:<ul>"
 		for _, comment := range post.Comments {
 			s += fmt.Sprintf("<li>[%s] %s</li>", comment.Author, comment.Content)
 		}
@@ -80,7 +80,7 @@ func RenderPosts(posts *[]BlogPost) string {
 		}
 
 		s += RenderPost(&p, false)
-		s += "<br>"
+		//s += "<br>"
 	}
 	s += "</ul>"
 

@@ -6,6 +6,7 @@ import (
 	"github.com/mikejs/gomongo/mongo"
 	"sync"
 	"time"
+	"html"
 )
 
 type MongoDB struct {
@@ -221,7 +222,7 @@ func (md *MongoDB) StoreComment(comment *PostComment) (id int64, err os.Error) {
 		//err = os.NewError("Post doesn't exist :]")
 		return
 	}
-
+	comment.Content = html.EscapeString(comment.Content)
 	qry, _ := mongo.Marshal(map[string]string{})
 	count, _ := md.comments.Count(qry)
 	count++
