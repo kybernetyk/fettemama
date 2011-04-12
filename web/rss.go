@@ -45,8 +45,13 @@ func renderRSSHeader() string {
 func renderRSSItem(post *BlogPost) string {
 	s := rss_item
 	s = strings.Replace(s, "$descriptioncontent$", post.Content, -1)
+	
+	l := len(post.Content)
+	if (l > 32) {
+		l = 32
+	}
 
-	s = strings.Replace(s, "$titlecontent$", post.Content[0:32], -1)
+	s = strings.Replace(s, "$titlecontent$", post.Content[0:l], -1)
 
 	link := fmt.Sprintf("http://fettemama.org/post?id=%d", post.Id)
 	s = strings.Replace(s, "$linkcontent$", link, -1)
