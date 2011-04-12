@@ -56,7 +56,7 @@ func renderRSSItem(post *BlogPost) string {
 	s = strings.Replace(s, "$guidcontent$", link, -1)
 	
 	post_date := time.SecondsToLocalTime(post.Timestamp)
-	date := post_date.Format(time.RFC822)
+	date := post_date.Format(time.RFC822Z)
 	s = strings.Replace(s, "$datecontent$", date, -1)
 	
 	return s
@@ -79,7 +79,5 @@ func RenderRSS(posts *[]BlogPost) string {
 func rss(ctx *web.Context) string {
     posts,_ := Db.GetLastNPosts(20) //postsForMonth(time.LocalTime())//
     s := RenderRSS(&posts)
-    s += RenderPosts(&posts)
-    s += RenderFooter()
 	return s
 }
