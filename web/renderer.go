@@ -51,11 +51,11 @@ func RenderPost(post *BlogPost, withComments bool) string {
 	s += "</li>"
 
 	if withComments {
-		s += "<p>Comments:<ul>"
+		s += "Comments:<ul>"
 		for _, comment := range post.Comments {
 			s += fmt.Sprintf("<li>[%s] %s</li>", comment.Author, comment.Content)
 		}
-		s += "</ul></p>"
+		s += "</ul>"
 		s += "<p><a href='/comment.html'>Willst du einen Kommentar hinterlassen?</a></p>"
 	}
 
