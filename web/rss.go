@@ -16,6 +16,7 @@ var rss_head = `<?xml version="1.0" encoding="UTF-8"?>
 <description>THE BEST BLOG IN THE UNIVERSE WRITTEN IN Go :]</description>
 <language>de</language>
 `
+
 var rss_item = `
 <item>
 <description><![CDATA[
@@ -49,7 +50,7 @@ func renderRSSItem(post *BlogPost) string {
 	if (l > 64) {
 		l = 64
 	}
-
+	fmt.Println("title: ", title)
 	s = strings.Replace(s, "$titlecontent$", title[0:l], -1)
 
 	link := fmt.Sprintf("http://fettemama.org/post?id=%d", post.Id)
