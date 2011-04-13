@@ -1,16 +1,16 @@
 package main
 
-/*import (
+import (
 	"fmt"
-)*/
+)
 
 //I hope I got the slices right and am not copying strings aroung :]
 func htmlstrip(s string) string {
-	bytes := []byte(s)
 	l := len(s)
-	ts := []byte{}
-	sl := bytes[:]
+	sl := []byte(s) 
 	
+	ts := make([]byte, 0, l) //our return slice
+
 	tmp := 0
 	for i, c := range s {
 		if c == '<' {
@@ -30,10 +30,9 @@ func htmlstrip(s string) string {
 	}
 	ts = append(ts, sl[tmp:len(s)]...)
 	
-	outstr := string(ts)
-	return outstr
+	return string(ts) 
 }
-/*
+
 var x = `Living the future:
 <blockquote>Die US-Marine hat erstmals einen Hochenergie-Laser auf See abgefeuert - und bei dem Experiment ein kleines Boot in Brand gesetzt. Schiffe sollen sich künftig mit solchen Energiewaffen verteidigen</blockquote>
 (<a href="http://www.spiegel.de/wissenschaft/technik/0,1518,756514,00.html">via</a>)
@@ -49,6 +48,6 @@ func main() {
 		"I <3 u <b>all!</b>",
 		"I <b>love</b> thats <3 u all!!!!1"}
 	for _, s := range strs {
-		fmt.Println(htmlstrip(s))
+		fmt.Println([]byte(htmlstrip(s)))
 	}
-}*/
+}
