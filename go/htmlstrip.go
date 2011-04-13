@@ -33,7 +33,6 @@ func htmlstrip(s string) string {
 	outstr := string(ts)
 	return outstr
 }
-
 /*
 var x = `Living the future:
 <blockquote>Die US-Marine hat erstmals einen Hochenergie-Laser auf See abgefeuert - und bei dem Experiment ein kleines Boot in Brand gesetzt. Schiffe sollen sich künftig mit solchen Energiewaffen verteidigen</blockquote>
@@ -45,7 +44,10 @@ func main() {
 		"<a href='http://www.de'>lol</a>",
 		"das ist ein <p>test</p>",
 		x,
-		"omg <b>d</b> lol<br>o"}
+		"omg <b>d</b> lol<br>o",
+		"I <3 u all!",
+		"I <3 u <b>all!</b>",
+		"I <b>love</b> thats <3 u all!!!!1"}
 	for _, s := range strs {
 		fmt.Println(htmlstrip(s))
 	}

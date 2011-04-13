@@ -54,12 +54,12 @@ func RenderPost(post *BlogPost, withComments bool) string {
 		s += "Comments:<ul>"
 		for _, comment := range post.Comments {
 			//comment := html.EscapeString(comment.Content)
-			content := comment.Content
+			content := htmlstrip(comment.Content)
 			content = strings.Replace(content, "<", "(", -1)
 			content = strings.Replace(content, ">", ")", -1)
 		
 			//author := html.EscapeString(comment.Author)
-			author := comment.Author
+			author := htmlstrip(comment.Author)
 			author = strings.Replace(author, "<", "(", -1)
 			author = strings.Replace(author, ">", ")", -1)
 			
