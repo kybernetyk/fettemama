@@ -25,7 +25,8 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 	
 	lines := strings.Split(post.Content, "\n", -1)
 	for _, line := range lines {
-	    s += fmt.Sprintf("\t%s\n",line)
+	    line = htmlstrip(line)
+			s += fmt.Sprintf("\t%s\n",line)
 	}
 	
 	if !withComments{
@@ -40,5 +41,5 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 }
 
 func (bf *TelnetBlogFormatter) FormatComment(comment *PostComment) string {
-    return fmt.Sprintf("\t*[%s] %s\n", comment.Author, comment.Content)
+    return fmt.Sprintf("\t*[%s] %s\n", htmlstrip(comment.Author), htmlstrip(comment.Content))
 }
