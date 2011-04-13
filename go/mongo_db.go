@@ -153,7 +153,7 @@ func (md *MongoDB) GetPostsForDate(date time.Time) (posts []BlogPost, err os.Err
 	start := date.Seconds()
 	end := start + (24 * 60 * 60)
 
-	return md.GetPostsForTimespan(start, end)
+	return md.GetPostsForTimespan(start, end, -1)
 }
 
 //returns posts for a certain month
