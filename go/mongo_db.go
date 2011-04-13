@@ -173,18 +173,18 @@ func (md *MongoDB) GetPostsForMonth(date time.Time) (posts []BlogPost, err os.Er
 	start := date.Seconds()
 	end := next_month.Seconds()
 
-	return md.GetPostsForTimespan(start, end)
+	return md.GetPostsForTimespan(start, end, -1)
 }
 
 
-func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error) {
+func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp , order int64) (posts []BlogPost, err os.Error) {
 	type q map[string]interface{}
 
 	//	m := q{"id": post_id}
 
 	m := q{
 		"$query":   q{"timestamp": q{"$gte": start_timestamp, "$lt": end_timestamp}},
-		"$orderby": q{"timestamp": -1},
+		"$orderby": q{"timestamp": order},
 	}
 
 	posts, err = md.getPostsForQuery(m, 0, 0)
@@ -200,7 +200,7 @@ func (md *MongoDB) GetLastNPosts(num_to_get int32) (posts []BlogPost, err os.Err
 	type q map[string]interface{}
 	m := q{
 		"$query":   q{},
-		"$orderby": q{"timestamp": -1},
+		"$orderby": q{"timestamp": 1},
 	}
 
 	//var posts []BlogPost

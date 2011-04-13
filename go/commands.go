@@ -238,7 +238,7 @@ func tch_handleToday(session *BlogSession, items []string) string {
 
     fmt.Printf("today: %d | tomorro: %d\n", today, tomorrow)
 
-	posts, err := session.Db().GetPostsForTimespan(today, tomorrow)
+	posts, err := session.Db().GetPostsForTimespan(today, tomorrow, 1)
 	if err != nil {
 		return err.String()+"\n"
 	}
