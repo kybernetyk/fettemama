@@ -214,8 +214,10 @@ func tch_handleNews(session *BlogSession, items []string) string {
 	//post.Comments, _ = session.Db().GetComments(post.Id)
 	s := ""
 	for _, post := range posts {
-		s += session.BlogFormatter().FormatPost(&post, false)
-		s += "\n"
+		//s += session.BlogFormatter().FormatPost(&post, false)
+		//s += "\n"
+		s = session.BlogFormatter().FormatPost( &post, false ) + s
+		s = "\n" + s
 	}
 
 	return s

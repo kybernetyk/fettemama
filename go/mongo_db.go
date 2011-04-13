@@ -200,7 +200,7 @@ func (md *MongoDB) GetLastNPosts(num_to_get int32) (posts []BlogPost, err os.Err
 	type q map[string]interface{}
 	m := q{
 		"$query":   q{},
-		"$orderby": q{"timestamp": 1},
+		"$orderby": q{"timestamp": -1},
 	}
 
 	//var posts []BlogPost
