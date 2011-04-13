@@ -14,7 +14,7 @@ func wordwrap(s string, maxlen int) string {
 		}
 		if s[i] == 000 {
 			indent = true
-			ret = append(ret, '>')
+			ret = append(ret, '\003')
 			continue
 		}
 		if s[i] == 001 {
@@ -52,7 +52,7 @@ func wordwrap(s string, maxlen int) string {
 		p++
 	}
 
-	str := strings.Replace(string(ret), ">", "  > ", -1)
+	str := strings.Replace(string(ret), "\003", "  > ", -1)
 
 	return str
 }
