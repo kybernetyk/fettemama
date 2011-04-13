@@ -1,8 +1,9 @@
 package main
 
-import (
+/*import (
 	"fmt"
 )
+*/
 
 //I hope I got the slices right and am not copying strings aroung :]
 func htmlstrip(s string) string {
@@ -32,7 +33,7 @@ func htmlstrip(s string) string {
 	
 	return string(ts) 
 }
-
+/*
 var x = `Living the future:
 <blockquote>Die US-Marine hat erstmals einen Hochenergie-Laser auf See abgefeuert - und bei dem Experiment ein kleines Boot in Brand gesetzt. Schiffe sollen sich künftig mit solchen Energiewaffen verteidigen</blockquote>
 (<a href="http://www.spiegel.de/wissenschaft/technik/0,1518,756514,00.html">via</a>)
@@ -50,4 +51,4 @@ func main() {
 	for _, s := range strs {
 		fmt.Println([]byte(htmlstrip(s)))
 	}
-}
+}*/
