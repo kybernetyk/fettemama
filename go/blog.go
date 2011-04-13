@@ -24,8 +24,8 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 	s := fmt.Sprintf("Post #%d, %s\n", post.Id, t.String())
 	content := post.Content
 	
-	content = strings.Replace(content, "<blockquote>", "\134", -1)
-	content = strings.Replace(content, "</blockquote>", "\140", -1) 
+	content = strings.Replace(content, "<blockquote>", "\000", -1)
+	content = strings.Replace(content, "</blockquote>", "\001", -1) 
 	content = htmlstrip(content)
 	content = wordwrap(content,60)
 	lines := strings.Split(content, "\n", -1)

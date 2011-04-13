@@ -9,20 +9,20 @@ func wordwrap(s string, maxlen int) string {
 	indent := false
 	p := 0
 	for i := 0; i < len(s); i++ {
-				if s[i] == '\n' {
-				p = 0
-			}
-			if s[i] == 92 {
-				indent = true
-				ret = append( ret, '>' )
-				continue
-			}
-			if s[i] == 96 {
-				indent = false
-				continue
-			}
-		
-		if p > 0 && p % maxlen == 0 {
+		if s[i] == '\n' {
+			p = 0
+		}
+		if s[i] == 000 {
+			indent = true
+			ret = append(ret, '>')
+			continue
+		}
+		if s[i] == 001 {
+			indent = false
+			continue
+		}
+
+		if p > 0 && p%maxlen == 0 {
 			z := i
 			if z < 0 {
 				break
@@ -32,11 +32,11 @@ func wordwrap(s string, maxlen int) string {
 					p = 0
 					d := i - z
 					i = z
-					
-					ret = ret[0:len( ret )-d]
-					ret = append( ret,'\n' )
+
+					ret = ret[0 : len(ret)-d]
+					ret = append(ret, '\n')
 					if indent {
-					ret = append( ret, '>' )
+						ret = append(ret, '>')
 					}
 					break
 				}
@@ -44,15 +44,15 @@ func wordwrap(s string, maxlen int) string {
 			}
 
 		} else {
-			ret = append( ret, s[ i ] )
-			if s[ i ] == '\n' && indent {
-				ret = append( ret, '>' )
+			ret = append(ret, s[i])
+			if s[i] == '\n' && indent {
+				ret = append(ret, '>')
 			}
 		}
 		p++
 	}
 
-	str := strings.Replace( string( ret), ">", "  > " , -1)
+	str := strings.Replace(string(ret), ">", "  > ", -1)
 
 	return str
 }
