@@ -22,8 +22,8 @@ var rss_item = `
 $descriptioncontent$
 ]]>
 </description>
-<title><![CDATA[
-$titlecontent$...]]>
+<title>
+$titlecontent$...
 </title>
 <link>$linkcontent$</link>
 <guid>$guidcontent$</guid>
