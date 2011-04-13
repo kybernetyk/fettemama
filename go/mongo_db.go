@@ -253,7 +253,15 @@ func (md *MongoDB) GetComments(post_id int64) (comments []PostComment, err os.Er
 	md.commentmu.Lock()
 	defer md.commentmu.Unlock()
 
-	m := map[string]int64{"postid": post_id}
+	//m := map[string]int64{"postid": post_id}
+	type q map[string]interface{}
+
+		m := q{
+		"$query":   q{"postid": post_id},
+		"$orderby": q{"timestamp": -1},
+	}
+
+	
 	var query mongo.BSON
 	query, err = mongo.Marshal(m)
 	if err != nil {
