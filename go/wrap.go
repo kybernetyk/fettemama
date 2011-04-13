@@ -1,33 +1,60 @@
 package main
 
-//import "fmt"
+import "strings"
 
+//why can't you have char*, Go?
 func wordwrap(s string, maxlen int) string {
-	ret := []byte(s)
+	ret := make([]byte, 0, len(s))
 
-	//fmt.Printf("s: %p\nr: %p\n", &s, ret)
-
+	indent := false
+	p := 0
 	for i := 0; i < len(s); i++ {
-
-		if i > 0 && i % maxlen == 0 {
+				if s[i] == '\n' {
+				p = 0
+			}
+			if s[i] == 92 {
+				indent = true
+				ret = append( ret, '>' )
+				continue
+			}
+			if s[i] == 96 {
+				indent = false
+				continue
+			}
+		
+		if p > 0 && p % maxlen == 0 {
 			z := i
 			if z < 0 {
 				break
 			}
 			for {
 				if s[z] == ' ' {
-					ret[z] = '\n'
+					p = 0
+					d := i - z
+					i = z
+					
+					ret = ret[0:len( ret )-d]
+					ret = append( ret,'\n' )
+					if indent {
+					ret = append( ret, '>' )
+					}
 					break
 				}
 				z--
 			}
 
 		} else {
-			ret[i] = s[i]
+			ret = append( ret, s[ i ] )
+			if s[ i ] == '\n' && indent {
+				ret = append( ret, '>' )
+			}
 		}
+		p++
 	}
 
-	return string(ret)
+	str := strings.Replace( string( ret), ">", "  > " , -1)
+
+	return str
 }
 /*
 func main() {

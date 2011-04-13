@@ -22,11 +22,14 @@ func NewTelnetBlogFormatter() *TelnetBlogFormatter {
 func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) string {
 	t := time.SecondsToLocalTime(post.Timestamp)
 	s := fmt.Sprintf("Post #%d, %s\n", post.Id, t.String())
-	content := htmlstrip(post.Content)
-	content = wordwrap(post.Content, 40)
+	content := post.Content
+	
+	content = strings.Replace(content, "<blockquote>", "\134", -1)
+	content = strings.Replace(content, "</blockquote>", "\140", -1) 
+	content = htmlstrip(content)
+	content = wordwrap(content,60)
 	lines := strings.Split(content, "\n", -1)
 	for _, line := range lines {
-	    line = line
 			s += fmt.Sprintf("\t%s\n",line)
 	}
 	
