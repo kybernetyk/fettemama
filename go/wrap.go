@@ -36,7 +36,7 @@ func wordwrap(s string, maxlen int) string {
 					ret = ret[0 : len(ret)-d]
 					ret = append(ret, '\n')
 					if indent {
-						ret = append(ret, '>')
+						ret = append(ret, '\003')
 					}
 					break
 				}
@@ -46,7 +46,7 @@ func wordwrap(s string, maxlen int) string {
 		} else {
 			ret = append(ret, s[i])
 			if s[i] == '\n' && indent {
-				ret = append(ret, '>')
+				ret = append(ret, '\003')
 			}
 		}
 		p++
