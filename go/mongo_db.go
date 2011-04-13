@@ -6,6 +6,7 @@ import (
 	"github.com/mikejs/gomongo/mongo"
 	"sync"
 	"time"
+	"strings"
 //	"html"
 )
 
@@ -222,9 +223,9 @@ func (md *MongoDB) StoreComment(comment *PostComment) (id int64, err os.Error) {
 		//err = os.NewError("Post doesn't exist :]")
 		return
 	}
-	comment := comment.Content
-	comment = strings.Replace(comment, "<", "(", -1)
-	comment = strings.Replace(comment, ">", ")", -1)
+	content := comment.Content
+	content = strings.Replace(content, "<", "(", -1)
+	content = strings.Replace(content, ">", ")", -1)
 
 	//author := html.EscapeString(comment.Author)
 	author := comment.Author
@@ -232,7 +233,7 @@ func (md *MongoDB) StoreComment(comment *PostComment) (id int64, err os.Error) {
 	author = strings.Replace(author, ">", ")", -1)
 		
 	comment.Author = author//html.EscapeString(comment.Author)
-	comment.Content = comment//html.EscapeString(comment.Content)
+	comment.Content = content//html.EscapeString(comment.Content)
 	
 	qry, _ := mongo.Marshal(map[string]string{})
 	count, _ := md.comments.Count(qry)
