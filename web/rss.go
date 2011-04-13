@@ -45,12 +45,11 @@ func renderRSSItem(post *BlogPost) string {
 	s = strings.Replace(s, "$descriptioncontent$", post.Content, -1)
 
 	title := htmlstrip(post.Content)
-
 	l := len(title)
 	if (l > 64) {
 		l = 64
 	}
-	fmt.Println("title: ", title)
+
 	s = strings.Replace(s, "$titlecontent$", title[0:l], -1)
 
 	link := fmt.Sprintf("http://fettemama.org/post?id=%d", post.Id)

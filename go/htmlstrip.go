@@ -8,7 +8,7 @@ package main
 func htmlstrip(s string) string {
 	bytes := []byte(s)
 	l := len(s)
-	ts := make([]byte, l)
+	ts := []byte{}
 	sl := bytes[:]
 	
 	tmp := 0
