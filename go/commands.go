@@ -90,7 +90,7 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 			min_perm_level: 0,
 		})
 
-  h.AddCommand(state_reading, "", BlogCommand{tch_handleNullspace, 0})
+	h.AddCommand(state_reading, "", BlogCommand{tch_handleNullspace, 0})
 	h.AddCommand(state_reading, "read", BlogCommand{tch_handleRead, 0})
 	h.AddCommand(state_reading, "news", BlogCommand{tch_handleNews, 0})
 	h.AddCommand(state_reading, "today", BlogCommand{tch_handleToday, 0})
@@ -110,7 +110,7 @@ func tch_handleRead(session *BlogSession, items []string) string {
 	id, _ := strconv.Atoi64(items[1])
 	post, err := session.Db().GetPost(id)
 	if err != nil {
-		return err.String()+"\n"
+		return err.String() + "\n"
 	}
 
 	post.Comments, _ = session.Db().GetComments(post.Id)
@@ -208,7 +208,7 @@ func tch_handleNews(session *BlogSession, items []string) string {
 
 	posts, err := session.Db().GetLastNPosts(int32(num))
 	if err != nil {
-		return err.String()+"\n"
+		return err.String() + "\n"
 	}
 
 	//post.Comments, _ = session.Db().GetComments(post.Id)
@@ -216,7 +216,7 @@ func tch_handleNews(session *BlogSession, items []string) string {
 	for _, post := range posts {
 		//s += session.BlogFormatter().FormatPost(&post, false)
 		//s += "\n"
-		s = session.BlogFormatter().FormatPost( &post, false ) + s
+		s = session.BlogFormatter().FormatPost(&post, false) + s
 		s = "\n" + s
 	}
 
@@ -227,22 +227,22 @@ func tch_handleToday(session *BlogSession, items []string) string {
 	if len(items) != 1 {
 		return "syntax: today\n"
 	}
-	
+
 	today_t := time.LocalTime()
 	today_t.Hour = 0
 	today_t.Minute = 0
 	today_t.Second = 0
 
 	today := today_t.Seconds()
-    tomorrow := today + (24 * 60 * 60)
+	tomorrow := today + (24 * 60 * 60)
 
-//GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error)
+	//GetPostsForTimespan(start_timestamp, end_timestamp int64) (posts []BlogPost, err os.Error)
 
-    fmt.Printf("today: %d | tomorro: %d\n", today, tomorrow)
+	//    fmt.Printf("today: %d | tomorro: %d\n", today, tomorrow)
 
 	posts, err := session.Db().GetPostsForTimespan(today, tomorrow, 1)
 	if err != nil {
-		return err.String()+"\n"
+		return err.String() + "\n"
 	}
 
 	//post.Comments, _ = session.Db().GetComments(post.Id)
@@ -252,12 +252,11 @@ func tch_handleToday(session *BlogSession, items []string) string {
 		s += "\n"
 	}
 
-
 	return s
 }
 
 func tch_handleNullspace(session *BlogSession, items []string) string {
-    return ""
+	return ""
 }
 
 
