@@ -6,7 +6,7 @@ import (
 	"github.com/mikejs/gomongo/mongo"
 	"sync"
 	"time"
-	"strings"
+	//"strings"
 //	"html"
 )
 
@@ -224,13 +224,13 @@ func (md *MongoDB) StoreComment(comment *PostComment) (id int64, err os.Error) {
 		return
 	}
 	content := comment.Content
-	content = strings.Replace(content, "<", "(", -1)
-	content = strings.Replace(content, ">", ")", -1)
+	//content = strings.Replace(content, "<", "(", -1)
+//	content = strings.Replace(content, ">", ")", -1)
 
 	//author := html.EscapeString(comment.Author)
 	author := comment.Author
-	author = strings.Replace(author, "<", "(", -1)
-	author = strings.Replace(author, ">", ")", -1)
+//	author = strings.Replace(author, "<", "(", -1)
+	//author = strings.Replace(author, ">", ")", -1)
 		
 	comment.Author = author//html.EscapeString(comment.Author)
 	comment.Content = content//html.EscapeString(comment.Content)

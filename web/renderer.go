@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
-	"strings"
+	//"strings"
 )
 
 func RenderHeader() string {
@@ -55,13 +55,13 @@ func RenderPost(post *BlogPost, withComments bool) string {
 		for _, comment := range post.Comments {
 			//comment := html.EscapeString(comment.Content)
 			content := htmlstrip(comment.Content)
-			content = strings.Replace(content, "<", "(", -1)
-			content = strings.Replace(content, ">", ")", -1)
+			//content = strings.Replace(content, "<", "(", -1)
+		//	content = strings.Replace(content, ">", ")", -1)
 		
 			//author := html.EscapeString(comment.Author)
 			author := htmlstrip(comment.Author)
-			author = strings.Replace(author, "<", "(", -1)
-			author = strings.Replace(author, ">", ")", -1)
+			//author = strings.Replace(author, "<", "(", -1)
+			//author = strings.Replace(author, ">", ")", -1)
 			
 			s += fmt.Sprintf("<li>[%s] %s</li>", author, content)
 		}
