@@ -258,7 +258,7 @@ func (md *MongoDB) GetComments(post_id int64) (comments []PostComment, err os.Er
 
 		m := q{
 		"$query":   q{"postid": post_id},
-		"$orderby": q{"timestamp": -1},
+		"$orderby": q{"timestamp": 1},
 	}
 
 	
