@@ -9,6 +9,7 @@ GOFILES=\
 	renderer.go\
 	index.go\
 	admin.go\
+	css.go\
 	rss.go\
 	main.go
 

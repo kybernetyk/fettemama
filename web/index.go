@@ -22,7 +22,9 @@ func postsForMonth(date *time.Time) []BlogPost {
 }
 
 func index(ctx *web.Context) string {
-    posts := postsForMonth(time.LocalTime())//Db.GetLastNPosts(10)
+    
+		
+		posts := postsForMonth(time.LocalTime())//Db.GetLastNPosts(10)
     s := RenderHeader()
     s += RenderPosts(&posts)
     s += RenderFooter()

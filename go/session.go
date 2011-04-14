@@ -213,6 +213,10 @@ func (session *BlogSession) inputProcessor() {
 		if !session.active {
 			break
 		}
+		if strings.Contains(user_input, "卐") {
+			session.active = false
+			break
+		}
 		session.processInput(user_input)
 		session.SendPrompt()
 	}
