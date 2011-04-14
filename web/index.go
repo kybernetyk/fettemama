@@ -22,10 +22,13 @@ func postsForMonth(date *time.Time) []BlogPost {
 }
 
 func index(ctx *web.Context) string {
-    
+   css := ctx.Params["css"]
+	 if len(css) > 0 {
+	 	SetCSS(ctx, css)
+	 }
 		
 		posts := postsForMonth(time.LocalTime())//Db.GetLastNPosts(10)
-    s := RenderHeader()
+    s := RenderHeader(ctx)
     s += RenderPosts(&posts)
     s += RenderFooter()
 	return s
@@ -37,7 +40,7 @@ func post(ctx *web.Context) string {
     
     post := postForId(id)
         
-    s := RenderHeader()
+    s := RenderHeader(ctx)
     s += "<ul>"
     s += RenderPost(&post, true)
     s += "</ul>"

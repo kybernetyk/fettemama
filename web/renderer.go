@@ -3,15 +3,17 @@ package main
 import (
 	"fmt"
 	"time"
-	//"strings"
+	"strings"
+	"web"
 )
 
-func RenderHeader() string {
-	return `<html>
+func RenderHeader(ctx *web.Context) string {
+	s := `<html>
     	<head>
     		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
     		<link rel="alternate" type="application/rss+xml" title="RSS FEED AFFE" href="/rss.xml">
     		<title>fefemama.org - THE BEST BLOG IN THE UNIVERSE WRITTEN IN Go :]</title>
+				$css$
 
     	<script type="text/javascript">
     	  var _gaq = _gaq || [];
@@ -30,6 +32,15 @@ func RenderHeader() string {
     		<b>I love the smell of nopslides in the morning ...</b><br>
 				<p align=right>Fragen? <a href="/faq.html">Antworten!</a></p>
     	 `
+
+	css, ok := GetCSS(ctx)
+	if !ok {
+		css = ""
+	}
+
+	cs := "<link rel=stylesheet type='text/css' href='" + css + "'>"
+
+	return strings.Replace(s, "$css$", cs, -1)
 }
 
 func RenderFooter() string {
