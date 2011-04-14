@@ -25,6 +25,8 @@ func index(ctx *web.Context) string {
    css := ctx.Params["css"]
 	 if len(css) > 0 {
 	 	SetCSS(ctx, css)
+		ctx.Redirect(302, "/")
+		return "ok"
 	 }
 		
 		posts := postsForMonth(time.LocalTime())//Db.GetLastNPosts(10)
