@@ -22,8 +22,8 @@ func postsForMonth(date *time.Time) []BlogPost {
 }
 
 func index(ctx *web.Context) string {
-   css := ctx.Params["css"]
-	 if len(css) > 0 {
+   css, ok := ctx.Params["css"]
+	 if ok {
 	 	SetCSS(ctx, css)
 		ctx.Redirect(302, "/")
 		return "ok"
