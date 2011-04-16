@@ -23,6 +23,7 @@ func postsForMonth(date *time.Time) []BlogPost {
 	return posts
 }
 
+//get css sring from cookie and embed it into a map for our mustache templates
 func getCSS(ctx *web.Context) map[string]string {
 	css, ok := GetCSS(ctx)
 	if !ok {
@@ -32,7 +33,7 @@ func getCSS(ctx *web.Context) map[string]string {
 	return m
 }
 
-
+// renders / 
 func index(ctx *web.Context) string {
 	css, ok := ctx.Params["css"]
 	if ok {
@@ -42,20 +43,24 @@ func index(ctx *web.Context) string {
 	}
 	posts := postsForMonth(time.LocalTime()) //Db.GetLastNPosts(10)
 
-
+	//embedded struct - our mustache templates need a NumOfComments field to render
+	//but we don't want to put that field into the BlogPost Struct so it won't get stored
+	//into the DB
 	type MyPost struct {
 		BlogPost
 		NumOfComments int
 	}
 
+	//posts ordered by date. this is ugly. TODO: look up if mustache hase something to handle this situation
 	type Date struct {
 		Date  string
 		Posts []MyPost
 	}
-	dates := []Date{}
 
+	//loop through our posts and put them into the appropriate date structure
+	dates := []Date{}
 	var cur_date time.Time
-	date := &Date{}
+	var date *Date
 	for _, p := range posts {
 		post_date := time.SecondsToLocalTime(p.Timestamp)
 		if !(cur_date.Day == post_date.Day && cur_date.Month == post_date.Month && cur_date.Year == post_date.Year) {
@@ -71,12 +76,13 @@ func index(ctx *web.Context) string {
 		"Dates": dates,
 	}
 
-	tmpl, _ := mustache.ParseFile("templ/all_posts.mustache")
+	tmpl, _ := mustache.ParseFile("templ/index.mustache")
 	fmt.Printf("%#v\n", m)
 	s := tmpl.Render(&m, getCSS(ctx))
 	return s
 }
 
+// renders /post?id=
 func post(ctx *web.Context) string {
 	id_s := ctx.Params["id"]
 	id, _ := strconv.Atoi64(id_s)
