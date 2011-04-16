@@ -112,7 +112,7 @@ func (s *BlogSession) SendPrompt() {
 	}
 }
 func (s *BlogSession) SendVersion() {
-	s.Send("fettemama.org blog system version v0.2\n\t(c) don vito 2011\n\twritten in Go\n\n")
+	s.Send("\x1b[5;33;41mfettemama.org\x1b[0;37;40m blog system version v0.2\n\t\x1b[3;36;40m(c) don vito 2011\x1b[0;37;40m\n\twritten in \x1b[1;32;40mGo\x1b[0;37;40m\n\n")
 }
 
 func (s *BlogSession) Id() int {
