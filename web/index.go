@@ -5,7 +5,6 @@ import (
 	"time"
 	"strconv"
 	"mustache"
-	"fmt"
 )
 
 func postForId(id int64) BlogPost {
@@ -77,7 +76,6 @@ func index(ctx *web.Context) string {
 	}
 
 	tmpl, _ := mustache.ParseFile("templ/index.mustache")
-	fmt.Printf("%#v\n", m)
 	s := tmpl.Render(&m, getCSS(ctx))
 	return s
 }
