@@ -6,7 +6,6 @@ GOFILES=\
 	../go/post.go\
 	../go/db.go\
 	../go/mongo_db.go\
-	renderer.go\
 	index.go\
 	admin.go\
 	css.go\
