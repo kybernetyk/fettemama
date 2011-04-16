@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+	<head>
+		<title>
+			Project: Spanferkel
+		</title>
+	</head>
+	<body>
+		<h3>
+			EDIT POST:
+		</h3>
+		<form action="/admin/edit" method="post">
+			<textarea rows="8" cols="80" id="content" name="content">
+				{{{Content}}}
+			</textarea> 
+			<input id="postid" type="hidden" value="{{Id}}" name="postid"><br>
+			<input type="submit" name="Submit" value="Submit">
+		</form>
+	</body>
+</html>

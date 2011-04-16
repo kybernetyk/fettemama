@@ -7,68 +7,12 @@ import (
 	"os"
 	"time"
 	"strconv"
-	"strings"
+	"mustache"
 )
 
 const (
 	admin_pass = "2fe9f478faa678b1005cba27ab69c6cd"
 )
-
-var loginpage = `
-<html>
-<head><title>Proove your strength ...</title></head>
-<body>
-<form action="/admin" method="POST">
-
-<label for="/etc">What is your godlevel?</label>
-<input id="godlevel" type="text" name="godlevel"/>
-<br>
-<label for="shadow">Is your godlevel legit?</label>
-<input id="md5" type="text" name="md5"/>
-<br>
-<label for="heiratswillig">There's no winter in california!'</label>
-<input id="password" type="text" name="password"/>
-<br>
-<label for="illegal">Please write another number</label>
-<input id="unused" type="text" name="unusdd"/>
-<input id="what" type="hidden" value="login" name="what">
-<br>
-<input type="submit" name="Submit" value="Submit"/>
-</form>
-</body>
-</html>
-`
-
-var adminpage = `
-<html>
-    <head><title>Project: Spanferkel</title></head>
-    <body>
-    <h3>GIEF POST:</h3>
-    <form action="/admin" method="POST">
-    <textarea rows="8" cols="80" id="content" name="content"></textarea>
-    <br>
-    <input id="what" type="hidden" value="post" name="what">
-    <br>
-    <input type="submit" name="Submit" value="Submit"/>
-    </form>
-    </body>
-    </html>
-`
-
-var editpage = `
-<html>
-    <head><title>Project: Spanferkel</title></head>
-    <body>
-    <h3>EDIT POST:</h3>
-    <form action="/admin/edit" method="POST">
-    <textarea rows="8" cols="80" id="content" name="content">$postcontent$</textarea>
-    <input id="postid" type="hidden" value="$postid$" name="postid">
-    <br>
-    <input type="submit" name="Submit" value="Submit"/>
-    </form>
-    </body>
-    </html>
-`
 
 
 var successpage = `<b>Post has been posted!</b><br><br><A href="/">Index</a>`
@@ -105,10 +49,10 @@ func createNewPost(content string) os.Error {
 
 func adminGet(ctx *web.Context) string {
 	if !checkGodLevel(ctx) {
-		return loginpage
+		return mustache.RenderFile("templ/admin_login.mustache")
 	}
 
-	return adminpage
+	return mustache.RenderFile("templ/admin_post.mustache")
 }
 
 func adminPost(ctx *web.Context) {
@@ -147,16 +91,14 @@ func adminPost(ctx *web.Context) {
 
 func editGet(ctx *web.Context) string {
 	if !checkGodLevel(ctx) {
-		return loginpage
+		return mustache.RenderFile("templ/admin_login.mustache")
 	}
 	id, _ := strconv.Atoi64(ctx.Params["id"])
 	post, err := Db.GetPost(id)
 	if err != nil {
 		return "couldn't load post with given id!"
 	}
-	s := strings.Replace(editpage, "$postcontent$", post.Content, -1)
-	s = strings.Replace(s, "$postid$", ctx.Params["id"], -1)
-	return s
+	return mustache.RenderFile("templ/admin_edit.mustache", &post)
 }
 
 func editPost(ctx *web.Context) {
