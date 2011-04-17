@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+	<channel>
+		<title>fefemama</title>
+		<link>http://fettemama.org</link>
+		<description>THE BEST BLOG IN THE UNIVERSE WRITTEN IN Go :]</description>
+		<language>de</language>
+
+		{{#Items}}
+			<item>
+			<description><![CDATA[
+			{{{Description}}}
+			]]>
+			</description>
+			<title>
+			{{Title}}
+			</title>
+			<link>{{Link}}</link>
+			<guid>{{Guid}}</guid>
+			<pubDate>{{Date}}</pubDate>
+			</item>
+		{{/Items}}
+	</channel>
+</rss>
+
