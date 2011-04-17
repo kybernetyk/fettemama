@@ -5,7 +5,6 @@ import (
 	"time"
 	"strings"
 	"web"
-	"lol"
 )
 
 var rss_head = `<?xml version="1.0" encoding="UTF-8"?>
