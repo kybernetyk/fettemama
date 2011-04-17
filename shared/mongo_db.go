@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"fmt"
-	"mongo"
+	"github.com/mikejs/gomongo/mongo"
 	"sync"
 	"time"
 	//"strings"
