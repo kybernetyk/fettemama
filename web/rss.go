@@ -41,5 +41,5 @@ func rss(ctx *web.Context) string {
 	}
 
 	m := map[string]interface{}{"Items": items}
-	return tmpl.Render(&m, getCSS(ctx))
+	return tmpl.Render(&m)
 }
