@@ -5,12 +5,14 @@
 
 echo "telnet blog"
 killall telblog
+sleep 2
 cd tnt 
 ./telblog > /dev/null &
 cd ..
 
 echo "web blog"
 killall blog
+sleep 2
 apache2ctl restart
 cd web
 ./blog > /dev/null &
