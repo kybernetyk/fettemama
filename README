@@ -14,4 +14,6 @@ web/ - The http version of the blog
 tnt/ - the telnet version of the blog
 shared/ - shared files
 
-
+how to get it running for dummies:
+./getdeps.sh
+./build.sh
