@@ -5,11 +5,12 @@ package main
 )
 */
 
+
 //I hope I got the slices right and am not copying strings aroung :]
 func htmlstrip(s string) string {
 	l := len(s)
-	sl := []byte(s) 
-	
+	sl := []byte(s)
+
 	ts := make([]byte, 0, l) //our return slice
 
 	tmp := 0
@@ -23,15 +24,15 @@ func htmlstrip(s string) string {
 			tmp = idx
 		}
 		if c == '>' {
-			tmp = i+1
+			tmp = i + 1
 			if tmp > l {
 				tmp = l
 			}
 		}
 	}
 	ts = append(ts, sl[tmp:len(s)]...)
-	
-	return string(ts) 
+
+	return string(ts)
 }
 /*
 var x = `Living the future:
