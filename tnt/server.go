@@ -13,7 +13,6 @@ const (
 
 
 type TelnetServer struct {
-	db        BlogDB
 	formatter BlogFormatter
 
 	control_chan chan string
@@ -25,9 +24,8 @@ type TelnetServer struct {
 }
 
 //// server
-func NewTelnetServer(db BlogDB, formatter BlogFormatter) *TelnetServer {
+func NewTelnetServer(formatter BlogFormatter) *TelnetServer {
 	ts := &TelnetServer{
-		db:        db,
 		formatter: formatter,
 	}
 
@@ -39,10 +37,6 @@ func NewTelnetServer(db BlogDB, formatter BlogFormatter) *TelnetServer {
 }
 
 func (srv *TelnetServer) Run() {
-	defer srv.db.Disconnect()
-
-	srv.db.Connect()
-//	srv.setupCMDHandlers()
 	go srv.serverFunc()
 
 	for {
@@ -120,7 +114,7 @@ func (srv *TelnetServer) handleClient(conn net.Conn) {
 
 func (srv *TelnetServer) serverFunc() {
 	service := fmt.Sprintf(":%d", port)
-	tcpAddr, _ := net.ResolveTCPAddr(service)
+	tcpAddr, _ := net.ResolveTCPAddr("tcp", service)
 	listener, _ := net.ListenTCP("tcp4", tcpAddr)
 
 	srv.PostStatus ("listening on: " + tcpAddr.IP.String() + service)

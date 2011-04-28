@@ -76,6 +76,9 @@ func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	db := md.db
 	m := bson.M{"id": post_id}
 	err = db.C("posts").Find(m).One(&post)
+	if err != nil {
+		fmt.Printf("GetPost() err: %s\n", err.String())
+	}
 	return
 }
 
@@ -123,6 +126,7 @@ func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp, order int
 	iter, e := db.C("posts").Find(m).Iter()
 	if e != nil {
 		err = e
+		fmt.Printf("GetPostsForTimespan() err: %s\n", err.String())
 		return
 	}
 
@@ -148,6 +152,7 @@ func (md *MongoDB) GetLastNPosts(num_to_get int32) (posts []BlogPost, err os.Err
 
 	iter, e := db.C("posts").Find(m).Limit(int(num_to_get)).Iter()
 	if e != nil {
+		fmt.Printf("GetLastNPosts() err: %s\n", err.String())
 		err = e
 		return
 	}
@@ -168,6 +173,7 @@ func (md *MongoDB) StoreComment(comment *PostComment) (id int64, err os.Error) {
 
 	_, err = md.GetPost(comment.PostId)
 	if err != nil {
+		fmt.Printf("StoreComment() err: %s\n", err.String())
 		return
 	}
 
@@ -197,6 +203,7 @@ func (md *MongoDB) GetComments(post_id int64) (comments []PostComment, err os.Er
 
 	iter, e := db.C("comments").Find(m).Iter()
 	if e != nil {
+		fmt.Printf("GetComments() err: %s\n", err.String())
 		err = e
 		return
 	}

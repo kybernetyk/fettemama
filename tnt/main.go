@@ -1,9 +1,11 @@
 package main
 
 func main() {
-	db := NewMongoDB();
+	DBConnect()
+	defer DBDisconnect()
+
 	formatter := NewTelnetBlogFormatter()
-	server := NewTelnetServer(db, formatter)
+	server := NewTelnetServer(formatter)
 	
 	server.Run()
 }

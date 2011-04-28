@@ -59,11 +59,6 @@ func (s *BlogSession) Server() *TelnetServer {
     return s.parent_server
 }
 
-//returns the current database
-func (s *BlogSession) Db() BlogDB {
-    return s.Server().db
-}
-
 //returns the current formatter
 func (s *BlogSession) BlogFormatter() BlogFormatter {
     return s.Server().formatter

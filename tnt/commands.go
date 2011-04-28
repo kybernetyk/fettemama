@@ -107,13 +107,16 @@ func tch_handleRead(session *BlogSession, items []string) string {
 	if len(items) != 2 {
 		return "syntax: read <post_id>\n"
 	}
+	db := DBGet()
+	defer db.Close()
+
 	id, _ := strconv.Atoi64(items[1])
-	post, err := session.Db().GetPost(id)
+	post, err := db.GetPost(id)
 	if err != nil {
 		return err.String() + "\n"
 	}
 
-	post.Comments, _ = session.Db().GetComments(post.Id)
+	post.Comments, _ = db.GetComments(post.Id)
 
 	return session.BlogFormatter().FormatPost(&post, true)
 }
@@ -156,7 +159,10 @@ func tch_handleComment(session *BlogSession, items []string) string {
 		PostId:    post_id,
 	}
 
-	i, err := session.Db().StoreComment(&comment)
+	db := DBGet()
+	defer db.Close()
+
+	i, err := db.StoreComment(&comment)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
@@ -187,7 +193,10 @@ func tch_handlePostingEnd(session *BlogSession, items []string) string {
 		Id:        0, //0 = create new post
 	}
 
-	id, err := session.Db().StorePost(&post)
+	db := DBGet()
+	defer db.Close()
+
+	id, err := db.StorePost(&post)
 	if err != nil {
 		return "error: " + err.String() + "\n"
 	}
@@ -206,12 +215,15 @@ func tch_handleNews(session *BlogSession, items []string) string {
 		num, _ = strconv.Atoi(items[1])
 	}
 
-	posts, err := session.Db().GetLastNPosts(int32(num))
+	db := DBGet()
+	defer db.Close()
+
+	posts, err := db.GetLastNPosts(int32(num))
 	if err != nil {
 		return err.String() + "\n"
 	}
 
-	//post.Comments, _ = session.Db().GetComments(post.Id)
+	//post.Comments, _ = db.GetComments(post.Id)
 	s := ""
 	for _, post := range posts {
 		//s += session.BlogFormatter().FormatPost(&post, false)
@@ -240,12 +252,15 @@ func tch_handleToday(session *BlogSession, items []string) string {
 
 	//    fmt.Printf("today: %d | tomorro: %d\n", today, tomorrow)
 
-	posts, err := session.Db().GetPostsForTimespan(today, tomorrow, 1)
+	db := DBGet()
+	defer db.Close()
+
+	posts, err := db.GetPostsForTimespan(today, tomorrow, 1)
 	if err != nil {
 		return err.String() + "\n"
 	}
 
-	//post.Comments, _ = session.Db().GetComments(post.Id)
+	//post.Comments, _ = db.GetComments(post.Id)
 	s := ""
 	for _, post := range posts {
 		s += session.BlogFormatter().FormatPost(&post, false)
