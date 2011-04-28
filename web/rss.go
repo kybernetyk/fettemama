@@ -8,7 +8,10 @@ import (
 )
 
 func rss(ctx *web.Context) string {
-	posts, _ := Db.GetLastNPosts(20) //postsForMonth(time.LocalTime())//
+		Db := DBGet()
+	defer Db.Close()
+
+posts, _ := Db.GetLastNPosts(20) //postsForMonth(time.LocalTime())//
 	tmpl, _ := mustache.ParseFile("templ/rss.mustache")
 
 	type RssItem struct {

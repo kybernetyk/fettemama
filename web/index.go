@@ -4,20 +4,30 @@ import (
 	"web"
 	"time"
 	"strconv"
+	"fmt"
 	"mustache"
 )
 
 func postForId(id int64) BlogPost {
+	Db := DBGet()
+	defer Db.Close()
+
 	post, _ := Db.GetPost(id)
 	return post
 }
 
 func postsForDay(date *time.Time) []BlogPost {
+	Db := DBGet()
+	defer Db.Close()
+
 	posts, _ := Db.GetPostsForDate(*date)
 	return posts
 }
 
 func postsForMonth(date *time.Time) []BlogPost {
+	Db := DBGet()
+	defer Db.Close()
+
 	posts, _ := Db.GetPostsForMonth(*date)
 	return posts
 }
@@ -41,7 +51,7 @@ func index(ctx *web.Context) string {
 		return "ok"
 	}
 	posts := postsForMonth(time.LocalTime()) //Db.GetLastNPosts(10)
-
+	fmt.Printf("posts: %#v\n", posts)
 	//embedded struct - our mustache templates need a NumOfComments field to render
 	//but we don't want to put that field into the BlogPost Struct so it won't get stored
 	//into the DB
@@ -55,6 +65,9 @@ func index(ctx *web.Context) string {
 		Date  string
 		Posts []MyPost
 	}
+	Db := DBGet()
+	defer Db.Close()
+
 
 	//loop through our posts and put them into the appropriate date structure
 	dates := []Date{}
@@ -82,7 +95,10 @@ func index(ctx *web.Context) string {
 
 // renders /post?id=
 func post(ctx *web.Context) string {
-	id_s := ctx.Params["id"]
+		Db := DBGet()
+	defer Db.Close()
+
+id_s := ctx.Params["id"]
 	id, _ := strconv.Atoi64(id_s)
 	post := postForId(id)
 	post.Comments, _ = Db.GetComments(post.Id)

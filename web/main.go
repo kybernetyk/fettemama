@@ -6,11 +6,11 @@ import (
 )
 
 
-var Db *MongoDB
 
 func main() {
-	Db = NewMongoDB()
-	Db.Connect()
+	DBConnect()
+	defer DBDisconnect()
+
 	web.Config.CookieSecret = "7C19QRmwf3mHZ9CPAaPQ0hsWeufKd"
 	web.Get("/", index)
 	web.Get("/post", post)

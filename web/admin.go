@@ -33,6 +33,9 @@ func godHash(str string) string {
 }
 
 func createNewPost(content string) os.Error {
+	Db := DBGet()
+	defer Db.Close()
+
 	post := BlogPost{
 		Content:   content,
 		Timestamp: time.Seconds(),
@@ -93,6 +96,9 @@ func editGet(ctx *web.Context) string {
 	if !checkGodLevel(ctx) {
 		return mustache.RenderFile("templ/admin_login.mustache")
 	}
+	Db := DBGet()
+	defer Db.Close()
+
 	id, _ := strconv.Atoi64(ctx.Params["id"])
 	post, err := Db.GetPost(id)
 	if err != nil {
@@ -106,6 +112,8 @@ func editPost(ctx *web.Context) {
 		ctx.Redirect(301, "/")
 		return
 	}
+	Db := DBGet()
+	defer Db.Close()
 
 	id, _ := strconv.Atoi64(ctx.Params["postid"])
 	post, err := Db.GetPost(id)
