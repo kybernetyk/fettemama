@@ -11,7 +11,7 @@ cd mustache.go && gomake && gomake install && cd ..
 #----------------------------------------------------
 echo "web.go ..."
 #git clone git://github.com/hoisie/web.go.git
-got clone git://github.com/jsz/web.go.git
+git clone git://github.com/jsz/web.go.git
 cd web.go && gomake && gomake install && cd ..
 #----------------------------------------------------
 echo "mgo ..."
