@@ -32,6 +32,14 @@ func postsForMonth(date *time.Time) []BlogPost {
 	return posts
 }
 
+func lastPosts(num int) []BlogPost {
+	Db := DBGet()
+	defer Db.Close()
+
+	posts, _ := Db.GetLastNPosts(num)
+	return posts
+}
+
 //get css sring from cookie and embed it into a map for our mustache templates
 func getCSS(ctx *web.Context) map[string]string {
 	css, ok := GetCSS(ctx)
@@ -50,8 +58,10 @@ func index(ctx *web.Context) string {
 		ctx.Redirect(302, "/")
 		return "ok"
 	}
-	posts := postsForMonth(time.LocalTime()) //Db.GetLastNPosts(10)
-	fmt.Printf("posts: %#v\n", posts)
+	//posts := postsForMonth(time.LocalTime()) //Db.GetLastNPosts(10)
+	
+	posts := lastPosts(0xff)
+	//fmt.Printf("posts: %#v\n", posts)
 	//embedded struct - our mustache templates need a NumOfComments field to render
 	//but we don't want to put that field into the BlogPost Struct so it won't get stored
 	//into the DB
