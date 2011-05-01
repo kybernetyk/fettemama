@@ -4,7 +4,7 @@ import (
 	"web"
 	"time"
 	"strconv"
-	"fmt"
+	//"fmt"
 	"mustache"
 )
 
@@ -32,7 +32,7 @@ func postsForMonth(date *time.Time) []BlogPost {
 	return posts
 }
 
-func lastPosts(num int) []BlogPost {
+func lastPosts(num int32) []BlogPost {
 	Db := DBGet()
 	defer Db.Close()
 
