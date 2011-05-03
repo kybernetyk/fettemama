@@ -8,11 +8,12 @@ type BlogPost struct {
 }
 
 func (self BlogPost) Excerpt() string {
+	t := htmlstrip(self.Content)
 	l := 80
-	if len(self.Content) <= 80 {
-		l = len(self.Content)
+	if len(t) <= 80 {
+		l = len(t)
 	}
-	ex := self.Content[0:l]
+	ex := t[0:l]
 	return string(ex)
 }
 
