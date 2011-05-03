@@ -54,8 +54,16 @@ func adminGet(ctx *web.Context) string {
 	if !checkGodLevel(ctx) {
 		return mustache.RenderFile("templ/admin_login.mustache")
 	}
+	Db := DBGet()
+	defer Db.Close()
 
-	return mustache.RenderFile("templ/admin_post.mustache")
+	posts, _ := Db.GetLastNPosts(256)
+
+	x := map[interface{}]interface{} {
+		"Posts" : posts,
+	}
+
+	return mustache.RenderFile("templ/admin_post.mustache", &x)
 }
 
 func adminPost(ctx *web.Context) {
@@ -104,7 +112,8 @@ func editGet(ctx *web.Context) string {
 	if err != nil {
 		return "couldn't load post with given id!"
 	}
-	return mustache.RenderFile("templ/admin_edit.mustache", &post)
+	posts, _ := Db.GetLastNPosts(256)
+	return mustache.RenderFile("templ/admin_edit.mustache", &post, &posts)
 }
 
 func editPost(ctx *web.Context) {
