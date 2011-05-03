@@ -58,9 +58,8 @@ func adminGet(ctx *web.Context) string {
 	defer Db.Close()
 
 	posts, _ := Db.GetLastNPosts(256)
-
-	x := map[interface{}]interface{} {
-		"Posts" : posts,
+	x := map[interface{}]interface{}{
+		"Posts": posts,
 	}
 
 	return mustache.RenderFile("templ/admin_post.mustache", &x)
@@ -113,7 +112,11 @@ func editGet(ctx *web.Context) string {
 		return "couldn't load post with given id!"
 	}
 	posts, _ := Db.GetLastNPosts(256)
-	return mustache.RenderFile("templ/admin_edit.mustache", &post, &posts)
+	x := map[interface{}]interface{}{
+		"Posts": posts,
+	}
+
+	return mustache.RenderFile("templ/admin_edit.mustache", &post, &x)
 }
 
 func editPost(ctx *web.Context) {
