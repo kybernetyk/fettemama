@@ -23,27 +23,27 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 	t := time.SecondsToLocalTime(post.Timestamp)
 	s := fmt.Sprintf("Post #%d, %s\n", post.Id, t.String())
 	content := post.Content
-	
+
 	content = strings.Replace(content, "<blockquote>", "\000", -1)
-	content = strings.Replace(content, "</blockquote>", "\001", -1) 
+	content = strings.Replace(content, "</blockquote>", "\001", -1)
 	content = htmlstrip(content)
-	content = wordwrap(content,60)
+	content = wordwrap(content, 60)
 	lines := strings.Split(content, "\n", -1)
 	for _, line := range lines {
-			s += fmt.Sprintf("\t%s\n",line)
+		s += fmt.Sprintf("\t%s\n", line)
 	}
-	
-	if !withComments{
-	    return s;
+
+	if !withComments {
+		return s
 	}
-	    
-    s += fmt.Sprintf("\nComments for post #%d:\n", post.Id)
+
+	s += fmt.Sprintf("\nComments for post #%d:\n", post.Id)
 	for _, c := range post.Comments {
-        s += bf.FormatComment(&c)
+		s += bf.FormatComment(&c)
 	}
 	return s
 }
 
 func (bf *TelnetBlogFormatter) FormatComment(comment *PostComment) string {
-    return fmt.Sprintf("\t*[%s] %s\n", htmlstrip(comment.Author), htmlstrip(comment.Content))
+	return fmt.Sprintf("\t*[%s] %s\n", htmlstrip(comment.Author), htmlstrip(comment.Content))
 }

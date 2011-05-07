@@ -4,6 +4,7 @@ import (
 	"net"
 	"fmt"
 	"sync"
+	"log"
 )
 
 
@@ -46,7 +47,7 @@ func (srv *TelnetServer) Run() {
 				return
 			}
 		case status := <-srv.status_chan:
-			fmt.Println(status)
+			log.Println(status)
 		}
 	}
 }

@@ -22,20 +22,20 @@ const (
 )
 
 type BlogSession struct {
-	conn             net.Conn
-	parent_server   *TelnetServer
+	conn          net.Conn
+	parent_server *TelnetServer
 
-	write_chan       chan string
-	read_chan        chan string
-	control_chan     chan string
+	write_chan   chan string
+	read_chan    chan string
+	control_chan chan string
 
 	active           bool
 	permission_level int //0 - regular visitor, 5 - blogger, 10 - superuser 
 	state            int
 	input_buffer     string //buffer for new posts, comments, etc. which can go over multiple lines of input
-	
-	id              int
-	
+
+	id int
+
 	commandHandler BlogCommandHandler
 }
 
@@ -56,21 +56,21 @@ func NewBlogSession(server *TelnetServer, conn net.Conn) *BlogSession {
 
 //returns the sessions parent server
 func (s *BlogSession) Server() *TelnetServer {
-    return s.parent_server
+	return s.parent_server
 }
 
 //returns the current formatter
 func (s *BlogSession) BlogFormatter() BlogFormatter {
-    return s.Server().formatter
+	return s.Server().formatter
 }
 
 //closes channels [?]
 func (s *BlogSession) Close() {
-    //do I have to close channels explicitely?
-    
-/*	close(s.read_chan)
-	close(s.write_chan)
-	close(s.control_chan)*/
+	//do I have to close channels explicitely?
+
+	/*	close(s.read_chan)
+		close(s.write_chan)
+		close(s.control_chan)*/
 }
 
 //initiates disconnect
@@ -80,7 +80,7 @@ func (s *BlogSession) Disconnect() {
 
 //session mainloop
 func (session *BlogSession) Run() {
-    for session.active {
+	for session.active {
 		select {
 		case status := <-session.control_chan:
 			if status == "disconnect" {
@@ -108,56 +108,56 @@ func (s *BlogSession) SendPrompt() {
 }
 func (s *BlogSession) SendVersion() {
 	//s.Send("\x1b[5;33;41mfettemama.org\x1b[0;37;40m blog system version v0.2\n\t\x1b[3;36;40m(c) don vito 2011\x1b[0;37;40m\n\twritten in \x1b[1;32;40mGo\x1b[0;37;40m\n\n")
-	s.Send("fettemama.org blog system version v0.2\n\tm(c) don vito 2011\n\twritten in Go\n\n")
+	s.Send("fettemama.org blog system version v0.2\n\t(c) don vito 2011\n\twritten in Go\n\n")
 }
 
 func (s *BlogSession) Id() int {
-    return s.id
+	return s.id
 }
 func (s *BlogSession) SetId(id int) {
-    s.id = id
+	s.id = id
 }
 
 func (s *BlogSession) PermissionLevel() int {
-    return s.permission_level
+	return s.permission_level
 }
 
 func (s *BlogSession) Auth(pwd string) bool {
-     prev_level := s.permission_level
-     hasher := md5.New()
-     hasher.Write([]byte(pwd))
-     h_pwd := fmt.Sprintf("%x", hasher.Sum())
-    
-     if h_pwd == user_pass {
-         s.permission_level = 0
-     }
-     if h_pwd == blogger_pass {
-         s.permission_level = 5
-     }
-     if h_pwd == admin_pass {
-         s.permission_level = 10
-     }
-    
-     if prev_level == s.permission_level {
-        return false
-     }
+	prev_level := s.permission_level
+	hasher := md5.New()
+	hasher.Write([]byte(pwd))
+	h_pwd := fmt.Sprintf("%x", hasher.Sum())
 
-    return true
+	if h_pwd == user_pass {
+		s.permission_level = 0
+	}
+	if h_pwd == blogger_pass {
+		s.permission_level = 5
+	}
+	if h_pwd == admin_pass {
+		s.permission_level = 10
+	}
+
+	if prev_level == s.permission_level {
+		return false
+	}
+
+	return true
 }
 
 func (s *BlogSession) State() int {
-    return s.state
+	return s.state
 }
 func (s *BlogSession) SetState(state int) {
-    s.state = state
+	s.state = state
 }
 
 func (s *BlogSession) InputBuffer() string {
-    return s.input_buffer
+	return s.input_buffer
 }
 
 func (s *BlogSession) ResetInputBuffer() {
-    s.input_buffer = ""
+	s.input_buffer = ""
 }
 
 func (s *BlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
@@ -219,14 +219,13 @@ func (session *BlogSession) inputProcessor() {
 }
 
 func (session *BlogSession) processInput(user_input string) {
-	if len( user_input ) > 1 {
+	if len(user_input) > 1 {
 		session.Server().PostStatus("* [" + (session.conn).RemoteAddr().String() + "] user input: " + user_input)
 	}
-	
+
 	items := strings.Split(user_input, " ", -1)
 	session.input_buffer += user_input
 	session.input_buffer += "\n"
-    session.Send(session.commandHandler.HandleCommand(session, items))
-    //handle handle command
+	session.Send(session.commandHandler.HandleCommand(session, items))
+	//handle handle command
 }
-
