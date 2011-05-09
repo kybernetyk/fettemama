@@ -114,6 +114,19 @@ func (md *MongoDB) GetPostsForMonth(date time.Time) (posts []BlogPost, err os.Er
 	return md.GetPostsForTimespan(start, end, -1)
 }
 
+func (md *MongoDB) GetPostsForLastNDays(num_of_days int64) (posts []BlogPost, err os.Error) {
+	today := time.Seconds()
+
+	t := today - 86400 * num_of_days
+	then := time.SecondsToLocalTime(t)
+	then.Hour = 0
+	then.Minute = 0
+	then.Second = 0
+	start := then.Seconds()
+
+	return md.GetPostsForTimespan(start, today, -1)
+}
+
 
 func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp, order int64) (posts []BlogPost, err os.Error) {
 	db := md.db
