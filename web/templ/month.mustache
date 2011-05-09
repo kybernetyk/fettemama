@@ -7,5 +7,7 @@
 				{{/Posts}}
 			</ul>
 		{{/Dates}}
-		<center><A href="/month">Ganzer Monat</a></center>
+		{{#PrevMonth}}
+		<center><A href="/month?m={{Month}}&y={{Year}}">Vorheriger Monat</a></center>
+		{{/PrevMonth}}
 {{> footer}}

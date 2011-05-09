@@ -13,6 +13,7 @@ func main() {
 
 	web.Config.CookieSecret = "7C19QRmwf3mHZ9CPAaPQ0hsWeufKd"
 	web.Get("/", index)
+	web.Get("/month", month)
 	web.Get("/post", post)
 
 	web.Get("/rss.xml", rss)
