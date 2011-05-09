@@ -70,6 +70,9 @@ func index(ctx *web.Context) string {
 	
 //	posts := lastPosts(0xff)
 	posts := postsForLastNDays(4)
+	if len(posts) <= 0 {
+		posts  = lastPosts(23)
+	}
 	//fmt.Printf("posts: %#v\n", posts)
 	//embedded struct - our mustache templates need a NumOfComments field to render
 	//but we don't want to put that field into the BlogPost Struct so it won't get stored
