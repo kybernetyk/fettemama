@@ -144,7 +144,7 @@ func tch_handlePost(session *BlogSession, items []string) string {
 }
 
 func tch_handleComment(session *BlogSession, items []string) string {
-	if len(items) < 3 {
+	if len(items) < 4 {
 		return "syntax: comment <post_id> <your_nick> <your many words of comment>\n"
 	}
 
