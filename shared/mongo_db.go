@@ -122,7 +122,6 @@ func (md *MongoDB) GetPostsForLastNDays(num_of_days int64) (posts []BlogPost, er
 		if num_of_days <= 0 || i >= 30 {
 			break
 		}
-		i++
 		s -= int64(i) * 86400
 		d := time.SecondsToLocalTime(s)
 		p, e := md.GetPostsForDate(*d)
@@ -130,6 +129,7 @@ func (md *MongoDB) GetPostsForLastNDays(num_of_days int64) (posts []BlogPost, er
 			posts = append(posts, p...)
 			num_of_days--
 		}
+		i++
 	}
 	return
 }
