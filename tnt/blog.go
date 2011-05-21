@@ -23,7 +23,6 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 	t := time.SecondsToLocalTime(post.Timestamp)
 	s := fmt.Sprintf("Post #%d, %s\n", post.Id, t.String())
 	content := post.Content
-
 	content = strings.Replace(content, "<blockquote>", "\000", -1)
 	content = strings.Replace(content, "</blockquote>", "\001", -1)
 	content = htmlstrip(content)
@@ -45,5 +44,12 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 }
 
 func (bf *TelnetBlogFormatter) FormatComment(comment *PostComment) string {
-	return fmt.Sprintf("\t*[%s] %s\n", htmlstrip(comment.Author), htmlstrip(comment.Content))
+	content := htmlstrip( comment.Content )
+	content = strings.Replace( content, "[", "", -1 )
+
+	author := htmlstrip( comment.Author )
+	author = strings.Replace( author, "[", "", -1 )
+	return fmt.Sprintf("\t*[%s] %s\n", author, content)
+
+
 }
