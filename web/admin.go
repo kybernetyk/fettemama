@@ -12,7 +12,7 @@ import (
 
 /*
 
-create a file admin_main.go with the following content:
+create a file admin_pass.go with the following content:
 
 package main
 const (
