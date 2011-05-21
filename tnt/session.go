@@ -161,11 +161,6 @@ func (s *BlogSession) ResetInputBuffer() {
 }
 
 func (s *BlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
-	if len(p) > 10 {
-		s.Send("Sorry, Input too long. Bye.\n")
-		s.Disconnect()
-		return nil, os.NewError("too long input!\n")
-	}
 	if p, err = b.ReadSlice('\n'); err != nil {
 		return nil, err
 	}
@@ -214,7 +209,7 @@ func (session *BlogSession) inputProcessor() {
 		if !session.active {
 			break
 		}
-		if strings.Contains(user_input, "卐") {
+		if strings.Contains(user_input, "卐") || len(user_input) > 10 {
 			session.active = false
 			break
 		}
