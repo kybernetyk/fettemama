@@ -72,7 +72,19 @@
         text-shadow: 0 0 0.5em #444;
       }
     </style>
-</head>
+	<script type="text/javascript">
+	  var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-705689-1']);
+	  _gaq.push(['_trackPageview']);
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+	</script>
+
+	</head>
+
 
 <body>
   <div class="ribbon">
@@ -93,11 +105,12 @@
 		%	telnet fettemama.org 1337
 		</div>
 		
-		<p>Connect, type "help" and explore. (Most blog posts are in German though.)</p>
+		<p>Connect, type <b>help</b> and explore. (Most blog posts are in German though.)<br>You can end the session by typing <b>quit</b>.</p>
 
 		<p>If you got curious about the blogging software just go to <a href="http://github.com/jsz/fettemama">GitHub</a> and take a look at it.</p>
 		
 		<p>Contact me via <A href="mailto:voidzone@me.com">email</a> if you've got something to say. Or leave a comment on the blog.</p>
+		<p style="font-size: 6px;"><b>Seriously why telnet?</b><br>Because I hate captchas and this is a nice way to let my readers comment without using any annoying anti-spam stuff. Spam bots blatantly ignore telnet.</p>
 	</div> 
 </body>
 
