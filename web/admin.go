@@ -10,10 +10,16 @@ import (
 	"mustache"
 )
 
+/*
+
+create a file admin_main.go with the following content:
+
+package main
 const (
-	admin_pass = "2fe9f478faa678b1005cba27ab69c6cd"
+	admin_pass = "YOUR ADMIN PASS MD5 HASH"
 )
 
+*/
 
 var successpage = `<b>Post has been posted!</b><br><br><A href="/">Index</a>`
 
