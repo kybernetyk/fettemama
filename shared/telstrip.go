@@ -13,4 +13,3 @@ func telstrip(s string) string {
 
 	return string(ts)
 }
-
