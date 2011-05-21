@@ -209,8 +209,9 @@ func (session *BlogSession) inputProcessor() {
 		if !session.active {
 			break
 		}
-		if strings.Contains(user_input, "卐") || len(user_input) > 10 {
-			session.active = false
+		if strings.Contains(user_input, "卐") || len(user_input) > 1024 {
+			//session.active = false
+			session.Disconnect()
 			break
 		}
 		session.processInput(user_input)
