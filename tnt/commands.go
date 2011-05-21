@@ -96,7 +96,7 @@ func (h *TelnetCommandHandler) setupCMDHandlers() {
 	h.AddCommand(state_reading, "today", BlogCommand{tch_handleToday, 0})
 	h.AddCommand(state_reading, "post", BlogCommand{tch_handlePost, 12})
 	h.AddCommand(state_reading, "comment", BlogCommand{tch_handleComment, 0})
-	h.AddCommand(state_reading, "broadcast", BlogCommand{tch_handleBroadcast, 0})
+	h.AddCommand(state_reading, "broadcast", BlogCommand{tch_handleBroadcast, 5})
 	h.AddCommand(state_reading, "help", BlogCommand{tch_handleHelp, 0})
 	h.AddCommand(state_posting, "$end", BlogCommand{tch_handlePostingEnd, 0})
 

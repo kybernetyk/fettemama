@@ -3,6 +3,7 @@
 *.6
 *.8
 *.8g
+admin_pass.go
 main
 blog
 posts/

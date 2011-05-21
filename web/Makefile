@@ -7,6 +7,7 @@ GOFILES=\
 	../shared/db.go\
 	../shared/mongo_db.go\
 	index.go\
+	admin_pass.go\
 	admin.go\
 	css.go\
 	rss.go\
