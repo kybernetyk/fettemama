@@ -285,6 +285,8 @@ func tch_handleHelp(session *BlogSession, items []string) string {
 	s += "read <post_id>\n\t* read a post\n"
 	s += "news [num of posts]\n\t* shows the last num posts\n"
 	s += "today\n\t* shows today's posts\n"
+	s += "broadcast <your broadcast messega>\n\t* sends a message to all logged in users\n"
+	s += "quit\n\t* ends your session\n"
 
 	s += "\n"
 	return s

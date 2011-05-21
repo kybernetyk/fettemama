@@ -60,12 +60,15 @@ func (srv *TelnetServer) PostStatus(status string) {
     srv.status_chan <- status
 }
 
+func bcast(ses *BlogSession, message string) {  
+					ses.Send("\n*** Broadcast: " + message)
+        	ses.SendPrompt()
+			}
+
 //broadcasts message to all connected clients
 func (srv *TelnetServer) Broadcast(message string) {
     for _, s := range srv.sessions {
-        ses := s
-        ses.Send("\n*** Broadcast: " + message)
-        ses.SendPrompt()
+    	go bcast( s, message )
     }
 }
 
