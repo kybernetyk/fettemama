@@ -2,6 +2,7 @@ include $(GOROOT)/src/Make.inc
 
 TARG=telblog
 GOFILES=\
+	../shared/telstrip.go\
 	../shared/htmlstrip.go\
 	wrap.go\
 	../shared/db.go\

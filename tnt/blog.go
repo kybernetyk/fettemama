@@ -44,11 +44,11 @@ func (bf *TelnetBlogFormatter) FormatPost(post *BlogPost, withComments bool) str
 }
 
 func (bf *TelnetBlogFormatter) FormatComment(comment *PostComment) string {
-	content := htmlstrip( comment.Content )
-	content = strings.Replace( content, "[", "", -1 )
+	content := htmlstrip( telstrip(comment.Content) )
+//	content = strings.Replace( content, "[", "", -1 )
 
-	author := htmlstrip( comment.Author )
-	author = strings.Replace( author, "[", "", -1 )
+	author := htmlstrip( telstrip(comment.Author) )
+//	author = strings.Replace( author, "[", "", -1 )
 	return fmt.Sprintf("\t*[%s] %s\n", author, content)
 
 
