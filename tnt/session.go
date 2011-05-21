@@ -161,6 +161,11 @@ func (s *BlogSession) ResetInputBuffer() {
 }
 
 func (s *BlogSession) readline(b *bufio.Reader) (p []byte, err os.Error) {
+	if len(p) > 1024 {
+		s.Send("Sorry, Input too long. Bye.\n")
+		s.Disconnect()
+		return nil, os.NewError("too long input!\n")
+	}
 	if p, err = b.ReadSlice('\n'); err != nil {
 		return nil, err
 	}
