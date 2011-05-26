@@ -1,9 +1,9 @@
 var blink_delay = 1000;
-var elems = document.all.tags("blink");
 var state = "visible"
 
 function do_blink() 
 {
+var elems =  document.getElementsByTagName("blink")
 	if (state == "hidden") {
 		state = "visible";
 	}	else {
