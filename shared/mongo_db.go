@@ -6,7 +6,7 @@ import (
 	"time"
 	"launchpad.net/gobson/bson"
 	"launchpad.net/mgo"
-	//"strings"
+	"strings"
 	//	"html"
 )
 
@@ -71,6 +71,27 @@ func (md *MongoDB) StorePost(post *BlogPost) (id int64, err os.Error) {
 	return
 }
 
+func post_holiday_transform(post *BlogPost) {
+	if today := time.LocalTime(); today.Day == 28 && today.Month == 6 {
+		CAPSLOCK_DAY_TRANSFORM_POST(post)
+	}
+}
+
+func comment_holiday_transform(comment *PostComment) {
+	if today := time.LocalTime(); today.Day == 28 && today.Month == 6 {
+		CAPSLOCK_DAY_TRANSFORM_COMMENT(comment)
+	}
+}
+
+//we must honor the capslock day
+func CAPSLOCK_DAY_TRANSFORM_POST(post *BlogPost) {
+	post.Content = strings.ToUpper(post.Content)
+}
+
+func CAPSLOCK_DAY_TRANSFORM_COMMENT(comment *PostComment) {
+	comment.Content = strings.ToUpper(comment.Content)
+	comment.Author = strings.ToUpper(comment.Author)
+}
 
 func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	db := md.db
@@ -79,6 +100,7 @@ func (md *MongoDB) GetPost(post_id int64) (post BlogPost, err os.Error) {
 	if err != nil {
 		fmt.Printf("GetPost() err: %s\n", err.String())
 	}
+	post_holiday_transform(&post)
 	return
 }
 
@@ -157,6 +179,7 @@ func (md *MongoDB) GetPostsForTimespan(start_timestamp, end_timestamp, order int
 		if e != nil {
 			break
 		}
+		post_holiday_transform(&post)
 		fmt.Printf("lol post: %#v\n", post)
 		posts = append(posts, post)
 	}
@@ -184,6 +207,7 @@ func (md *MongoDB) GetLastNPosts(num_to_get int32) (posts []BlogPost, err os.Err
 		if e != nil {
 			break
 		}
+		post_holiday_transform(&post)
 		posts = append(posts, post)
 	}
 	return
@@ -235,6 +259,7 @@ func (md *MongoDB) GetComments(post_id int64) (comments []PostComment, err os.Er
 		if e != nil {
 			break
 		}
+		comment_holiday_transform(&comment)
 		comments = append(comments, comment)
 	}
 	return
