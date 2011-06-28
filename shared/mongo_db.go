@@ -73,13 +73,13 @@ func (md *MongoDB) StorePost(post *BlogPost) (id int64, err os.Error) {
 
 func post_holiday_transform(post *BlogPost) {
 	if today := time.LocalTime(); today.Day == 28 && today.Month == 6 {
-		CAPSLOCK_DAY_TRANSFORM_POST(post)
+//		CAPSLOCK_DAY_TRANSFORM_POST(post)
 	}
 }
 
 func comment_holiday_transform(comment *PostComment) {
 	if today := time.LocalTime(); today.Day == 28 && today.Month == 6 {
-		CAPSLOCK_DAY_TRANSFORM_COMMENT(comment)
+//		CAPSLOCK_DAY_TRANSFORM_COMMENT(comment)
 	}
 }
 
