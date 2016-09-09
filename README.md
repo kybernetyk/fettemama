@@ -4,7 +4,7 @@ uses mgo database driver
 uses no fancy libs for telnet
 
 (c) Leon Szpilewski
-[Audio Recorder Mac](http://www.fluxforge.com/kvlt/)
+[Teleprompter for Mac](https://suborbital.io/powerprompter/)
 Licensed under GPL v3
 
 Dependencies:
